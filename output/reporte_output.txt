@@ -1,0 +1,155 @@
+================================================================================
+                      REPORTE DE PROCESAMIENTO DE ARCHIVOS
+================================================================================
+
+Fecha de generación: 2026-01-23 05:39:31
+Directorio procesado: data/valid
+Modo de procesamiento: Parallel
+
+--------------------------------------------------------------------------------
+RESUMEN EJECUTIVO
+--------------------------------------------------------------------------------
+Total de archivos procesados: 7
+  - Archivos CSV: 2
+  - Archivos JSON: 2
+  - Archivos LOG: 2
+  - Archivos XML: 1
+
+Tiempo total de procesamiento: 0.08 segundos
+Archivos con errores: 0
+Tasa de éxito: 100.0%
+
+--------------------------------------------------------------------------------
+MÉTRICAS DE ARCHIVOS CSV
+--------------------------------------------------------------------------------
+[Archivo: ventas_enero.csv]
+  * Total de ventas: $24,399.93
+  * Productos únicos: 15
+  * Producto más vendido: Cable HDMI (40 unidades)
+  * Categoría con mayor ingreso: Computadoras ($10,289.91)
+  * Promedio de descuento aplicado: 12.0%
+  * Rango de fechas procesadas: 2024-01-02 a 2024-01-30
+
+[Archivo: ventas_febrero.csv]
+  * Total de ventas: $26,721.37
+  * Productos únicos: 16
+  * Producto más vendido: Cable Ethernet Cat6 (30 unidades)
+  * Categoría con mayor ingreso: Computadoras ($13,049.89)
+  * Promedio de descuento aplicado: 13.5%
+  * Rango de fechas procesadas: 2024-02-01 a 2024-02-28
+
+
+Totales Consolidados CSV:
+  - Ventas totales: $51,121.30
+  - Productos únicos totales: 31
+
+
+--------------------------------------------------------------------------------
+MÉTRICAS DE ARCHIVOS JSON
+--------------------------------------------------------------------------------
+[Archivo: sesiones.json]
+  * Total de usuarios registrados: 8
+  * Usuarios activos vs inactivos: 7 activos / 1 inactivos (87.5%)
+  * Promedio de duración de sesión: 30.0 minutos
+  * Total de páginas visitadas: 285
+  * Top 5 acciones más comunes:
+    1. login (12 veces)
+    2. logout (12 veces)
+    3. ver_dashboard (5 veces)
+    4. guardar (3 veces)
+    5. exportar_excel (2 veces)
+  * Hora pico de actividad: 8:00 (2 sesiones)
+
+[Archivo: usuarios.json]
+  * Total de usuarios registrados: 10
+  * Usuarios activos vs inactivos: 7 activos / 3 inactivos (70.0%)
+  * Promedio de duración de sesión: 26.7 minutos
+  * Total de páginas visitadas: 161
+  * Top 5 acciones más comunes:
+    1. login (10 veces)
+    2. logout (10 veces)
+    3. ver_dashboard (6 veces)
+    4. buscar (4 veces)
+    5. ver_reportes (4 veces)
+  * Hora pico de actividad: 9:00 (2 sesiones)
+
+
+Totales Consolidados JSON:
+  - Usuarios totales: 18
+  - Sesiones totales: 22
+
+
+--------------------------------------------------------------------------------
+MÉTRICAS DE ARCHIVOS LOG
+--------------------------------------------------------------------------------
+[Archivo: aplicacion.log]
+  * Total de entradas: 71
+  * Distribución de logs por nivel:
+    - DEBUG: 10 (14.1%)
+    - INFO: 47 (66.2%)
+    - WARN: 6 (8.5%)
+    - ERROR: 8 (11.3%)
+    - FATAL: 0 (0.0%)
+  * Errores más frecuentes (análisis de mensajes):
+    1. "API externa retornó código 503..." (1 veces)
+    2. "Constraint violation: stock no puede ser negativo..." (1 veces)
+    3. "Error al actualizar stock del producto ID:4532..." (1 veces)
+  * Componentes con más errores:
+    1. Integration (2 errores)
+    2. Inventario (2 errores)
+    3. Pago (2 errores)
+    4. UI (2 errores)
+  * Errores críticos (ERROR + FATAL): 8
+
+[Archivo: sistema.log]
+  * Total de entradas: 72
+  * Distribución de logs por nivel:
+    - DEBUG: 6 (8.3%)
+    - INFO: 49 (68.1%)
+    - WARN: 7 (9.7%)
+    - ERROR: 9 (12.5%)
+    - FATAL: 1 (1.4%)
+  * Errores más frecuentes (análisis de mensajes):
+    1. "Deadlock detectado en transacción..." (1 veces)
+    2. "Error en endpoint /api/v1/users..." (1 veces)
+    3. "Error: División por cero en cálculo de promedio..." (1 veces)
+  * Componentes con más errores:
+    1. API (3 errores)
+    2. Database (2 errores)
+    3. Reportes (2 errores)
+    4. Scheduler (2 errores)
+    5. Storage (1 errores)
+  * Errores críticos (ERROR + FATAL): 10
+
+
+Totales Consolidados LOG:
+  - Entradas totales: 143
+
+
+--------------------------------------------------------------------------------
+MÉTRICAS DE ARCHIVOS XML
+--------------------------------------------------------------------------------
+[Archivo: productos.xml]
+  * Total de productos: 5
+  * Valor total de inventario: $44,948.40
+  * Categorías: 4
+  * Items con stock bajo: 0
+  * Precio promedio: $415.99
+
+
+--------------------------------------------------------------------------------
+ANÁLISIS DE RENDIMIENTO
+--------------------------------------------------------------------------------
+Tiempo total: 78ms (0.08s)
+Promedio por archivo: 11.14ms
+Modo utilizado: Parallel
+Archivos procesados: 7
+
+--------------------------------------------------------------------------------
+ERRORES Y ADVERTENCIAS
+--------------------------------------------------------------------------------
+No hay errores ni advertencias que reportar.
+
+================================================================================
+                                FIN DEL REPORTE
+================================================================================

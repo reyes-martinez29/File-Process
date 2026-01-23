@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog>
+  <metadata>
+    <generated>2024-02-28T12:00:00Z</generated>
+    <source>Sistema de Inventario</source>
+  </metadata>
+  <products>
+    <product id="1001">
+      <name>Laptop Dell XPS 15</name>
+      <category>Computadoras</category>
+      <price currency="USD">1299.99</price>
+      <stock>15</stock>
+      <supplier>Dell Inc.</supplier>
+    </product>
+    <product id="1002">
+      <name>Mouse Logitech MX Master</name>
+      <category>Accesorios</category>
+      <price currency="USD">99.99</price>
+      <stock>50</stock>
+      <supplier>Logitech</supplier>
+    </product>
+    <product id="1003">
+      <name>Monitor Samsung 27"</name>
+      <category>Monitores</category>
+      <price currency="USD">349.99</price>
+      <stock>25</stock>
+      <supplier>Samsung</supplier>
+    </product>
+    <product id="1004">
+      <name>Teclado Mecánico Corsair</name>
+      <category>Accesorios</category>
+      <price currency="USD">149.99</price>
+      <stock>30</stock>
+      <supplier>Corsair</supplier>
+    </product>
+    <product id="1005">
+      <name>SSD Samsung 1TB</name>
+      <category>Almacenamiento</category>
+      <price currency="USD">179.99</price>
+      <stock>40</stock>
+      <supplier>Samsung</supplier>
+    </product>
+  </products>
+</catalog>
