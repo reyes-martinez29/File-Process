@@ -44,6 +44,9 @@ defmodule FProcess.Metrics.XMLMetrics do
       metadata: Map.get(data, :metadata, %{})
     }
 
+    # Provide a normalized record count for FileProcessor
+    metrics = Map.put(metrics, :total_records, length(products))
+
     {:ok, metrics}
   end
 
