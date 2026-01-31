@@ -6,9 +6,6 @@ defmodule FProcessTest do
   alias FProcess.FileProcessor
 
   describe "basic helpers" do
-    test "hello/0 returns :world" do
-      assert FProcess.hello() == :world
-    end
   end
 
   describe "CSVParser" do

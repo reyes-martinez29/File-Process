@@ -64,6 +64,8 @@ defmodule FProcess.CLI do
 
   defp determine_input(_), do: nil
 
+  # =====================  PROCESS COMMANDS ========================================
+
   # Process the parsed command
   defp process_command(:help) do
     print_help()
@@ -130,7 +132,8 @@ defmodule FProcess.CLI do
     end
   end
 
-  # Build options map from CLI flags
+
+  # ================ Build options map from CLI flags ===========================
   defp build_options(opts) do
     base_opts = []
 
@@ -180,7 +183,7 @@ defmodule FProcess.CLI do
     base_opts
   end
 
-  # Print help message
+  # ----------------- Print help message -------------
   defp print_help do
     IO.puts("""
 
