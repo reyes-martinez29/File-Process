@@ -35,6 +35,9 @@ defmodule FProcess.Metrics.JSONMetrics do
       peak_hour: find_peak_hour(sessions)
     }
 
+    # Standardize a total_records key so FileProcessor can estimate lines processed
+    metrics = Map.put(metrics, :total_records, length(sessions))
+
     {:ok, metrics}
   end
 

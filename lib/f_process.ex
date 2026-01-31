@@ -48,15 +48,6 @@ defmodule FProcess do
 
   @type process_result :: {:ok, FProcess.Structs.ExecutionReport.t()} | {:error, String.t()}
 
-  @doc """
-  A small helper used by the test suite.
-  Returns `:world`.
-  """
-  @spec hello() :: :world
-  def hello do
-    :world
-  end
-
   # ============================================================================
   # Public API
   # ============================================================================
@@ -104,16 +95,15 @@ defmodule FProcess do
           {:ok, execution_report} ->
             # If there were skipped files, attach them as error FileResults
             if skipped != [] do
-              error_results = Enum.map(skipped, fn msg ->
-                # Attempt to extract path from message after ": "
-                path =
-                  case String.split(msg, ": ") |> List.last() do
-                    nil -> "unknown"
-                    p -> p
-                  end
+              error_results = Enum.map(skipped, fn
+                {path, reason} when is_binary(reason) ->
+                  p = if is_binary(path) and path != nil, do: path, else: "unknown"
+                  fr = FProcess.Structs.FileResult.new(p, :unknown)
+                  FProcess.Structs.FileResult.error(fr, reason, 0)
 
-                fr = FProcess.Structs.FileResult.new(path, :unknown)
-                FProcess.Structs.FileResult.error(fr, msg, 0)
+                reason when is_binary(reason) ->
+                  fr = FProcess.Structs.FileResult.new("unknown", :unknown)
+                  FProcess.Structs.FileResult.error(fr, reason, 0)
               end)
 
               # Update report counts and results

@@ -174,10 +174,10 @@ defmodule FProcess.FileDiscovery do
 
         {:error, :unsupported_format} ->
           ext = Path.extname(file_path)
-          {:error, "Unsupported file format '#{ext}'. Supported: #{format_supported_extensions()}"}
+          {:error, {file_path, "Unsupported file format '#{ext}'. Supported: #{format_supported_extensions()}"}}
       end
     else
-      {:error, "File does not exist or is not a regular file: #{file_path}"}
+      {:error, {file_path, "File does not exist or is not a regular file"}}
     end
   end
 
@@ -208,11 +208,14 @@ defmodule FProcess.FileDiscovery do
           valid_files
           |> Enum.flat_map(fn {:ok, data} -> data.files end)
 
-        skipped_msgs =
+        skipped =
           invalid_files
-          |> Enum.map(fn {:error, msg} -> msg end)
+          |> Enum.map(fn
+            {:error, {path, reason}} -> {path, reason}
+            {:error, reason} when is_binary(reason) -> {nil, reason}
+          end)
 
-        {:ok, %{files: result, skipped: skipped_msgs}}
+        {:ok, %{files: result, skipped: skipped}}
     end
   end
 
