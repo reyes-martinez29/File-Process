@@ -2,9 +2,9 @@
                       REPORTE DE PROCESAMIENTO DE ARCHIVOS
 ================================================================================
 
-Fecha de generación: 2026-01-23 05:39:31
+Fecha de generación: 2026-02-08 22:41:38
 Directorio procesado: data/valid
-Modo de procesamiento: Parallel
+Modo de procesamiento: Sequential
 
 --------------------------------------------------------------------------------
 RESUMEN EJECUTIVO
@@ -15,7 +15,7 @@ Total de archivos procesados: 7
   - Archivos LOG: 2
   - Archivos XML: 1
 
-Tiempo total de procesamiento: 0.08 segundos
+Tiempo total de procesamiento: 0.0 segundos
 Archivos con errores: 0
 Tasa de éxito: 100.0%
 
@@ -140,9 +140,9 @@ MÉTRICAS DE ARCHIVOS XML
 --------------------------------------------------------------------------------
 ANÁLISIS DE RENDIMIENTO
 --------------------------------------------------------------------------------
-Tiempo total: 78ms (0.08s)
-Promedio por archivo: 11.14ms
-Modo utilizado: Parallel
+Tiempo total: 3ms (0.0s)
+Promedio por archivo: 0.43ms
+Modo utilizado: Sequential
 Archivos procesados: 7
 
 --------------------------------------------------------------------------------
