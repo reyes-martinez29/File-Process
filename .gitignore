@@ -29,6 +29,5 @@ erl_crash.dump
 output/reporte_output.txt
 
 # Ignore tests integration files
- test_integration.exs
- test_upload.exs
- 
+test_integration.exs
+test_upload.exs
