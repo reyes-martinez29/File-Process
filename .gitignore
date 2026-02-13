@@ -24,3 +24,11 @@ erl_crash.dump
 
 # Ignore ElixirLS files
 .elixir_ls/
+
+# Output files from processing 
+output/reporte_output.txt
+
+# Ignore tests integration files
+ test_integration.exs
+ test_upload.exs
+ 
