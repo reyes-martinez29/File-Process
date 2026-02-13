@@ -2,7 +2,7 @@
                       REPORTE DE PROCESAMIENTO DE ARCHIVOS
 ================================================================================
 
-Fecha de generación: 2026-02-13 21:10:37
+Fecha de generación: 2026-02-13 21:28:15
 Directorio procesado: /tmp
 Modo de procesamiento: Parallel
 
@@ -110,8 +110,8 @@ Totales Consolidados LOG:
 --------------------------------------------------------------------------------
 ANÁLISIS DE RENDIMIENTO
 --------------------------------------------------------------------------------
-Tiempo total: 19ms (0.02s)
-Promedio por archivo: 3.8ms
+Tiempo total: 16ms (0.02s)
+Promedio por archivo: 3.2ms
 Modo utilizado: Parallel
 Archivos procesados: 5
 

@@ -162,15 +162,33 @@
               Reporte de Salida
             </h3>
             <div id="status-indicator" class="flex items-center gap-1.5">
-              <span class="text-[10px] text-slate-400 font-medium">Sin generar</span>
-              <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+              <%= if @report do %>
+                <span class="text-[10px] text-green-500 font-medium">Generado</span>
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              <% else %>
+                <span class="text-[10px] text-slate-400 font-medium">Sin generar</span>
+                <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+              <% end %>
             </div>
           </div>
           
           <div class="bg-slate-900 rounded-2xl p-4 shadow-2xl border border-slate-800">
-            <pre id="report-output" class="text-[11px] font-mono text-slate-300 overflow-auto whitespace-pre leading-relaxed h-64 custom-scrollbar">
-        // Esperando ejecución...
-            </pre>
+            <pre id="report-output" class="text-[11px] font-mono text-slate-300 overflow-auto whitespace-pre leading-relaxed h-64 custom-scrollbar"><%= if @report do %>Processing Report
+================
+Mode: {@report.mode}
+Total Files: {@report.total_files}
+Successful: {@report.success_count}
+Failed: {@report.error_count}
+Duration: {@report.total_duration_ms}ms
+
+File Types:
+- CSV: {@report.csv_count}
+- JSON: {@report.json_count}
+- XML: {@report.xml_count}
+- LOG: {@report.log_count}
+
+Full report saved to: {@report.report_path}
+<% else %>// Waiting for execution...<% end %></pre>
           </div>
         </div>
       </section>

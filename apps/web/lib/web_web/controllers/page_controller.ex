@@ -2,7 +2,8 @@ defmodule WebWeb.PageController do
   use WebWeb, :controller
 
   def home(conn, _params) do
-    render(conn, :home)
+    # Render home page with optional report data from assigns
+    render(conn, :home, report: nil)
   end
 
   def upload(conn, %{"archivos" => archivos}) when is_list(archivos) do
@@ -23,31 +24,29 @@ defmodule WebWeb.PageController do
     # Step 3: Clean up all temporary files
     Enum.each(temp_files, &File.rm/1)
 
-    # Step 4: Show results
+    # Step 4: Show results on the same page
     case resultado do
       {:ok, reporte} ->
-        message = build_success_message(reporte, length(archivos))
         conn
-        |> put_flash(:info, message)
-        |> redirect(to: ~p"/")
+        |> put_flash(:info, build_success_message(reporte, length(archivos)))
+        |> render(:home, report: reporte)
 
       {:error, razon} ->
         conn
         |> put_flash(:error, "Error: #{razon}")
-        |> redirect(to: ~p"/")
+        |> render(:home, report: nil)
     end
   end
 
   def upload(conn, _params) do
     conn
     |> put_flash(:error, "No files received")
-    |> redirect(to: ~p"/")
+    |> render(:home, report: nil)
   end
 
   # Private helper functions
 
   defp build_success_message(reporte, total_files) do
-    "Successfully processed #{reporte.success_count} of #{total_files} file(s). " <>
-    "Check output/reporte_output.txt for details."
+    "Successfully processed #{reporte.success_count} of #{total_files} file(s)."
   end
 end
