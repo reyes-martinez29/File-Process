@@ -6,26 +6,29 @@ defmodule WebWeb.PageController do
   end
 
   def upload(conn, %{"archivos" => archivos}) when is_list(archivos) do
-    # Currently processing only the first uploaded file
-    archivo = List.first(archivos)
+    # Process all uploaded files
+    # Phoenix uploads don't preserve extensions, so we create temp files with proper names
 
-    # Create a temporary file with the correct extension
-    # Phoenix uploads don't preserve extensions, but FProcess needs them
-    temp_path = System.tmp_dir!() <> "/" <> archivo.filename
+    # Step 1: Create temporary files with correct extensions
+    temp_files =
+      Enum.map(archivos, fn archivo ->
+        temp_path = System.tmp_dir!() <> "/" <> archivo.filename
+        File.cp!(archivo.path, temp_path)
+        temp_path
+      end)
 
-    # Copy uploaded file to temp location with proper extension
-    File.cp!(archivo.path, temp_path)
+    # Step 2: Process all files with FProcess
+    resultado = FProcess.process_files(temp_files)
 
-    # Process the file with FProcess
-    resultado = FProcess.process_file(temp_path)
+    # Step 3: Clean up all temporary files
+    Enum.each(temp_files, &File.rm/1)
 
-    # Clean up temporary file
-    File.rm(temp_path)
-
+    # Step 4: Show results
     case resultado do
-      {:ok, _reporte} ->
+      {:ok, reporte} ->
+        message = build_success_message(reporte, length(archivos))
         conn
-        |> put_flash(:info, "File processed successfully: #{archivo.filename}")
+        |> put_flash(:info, message)
         |> redirect(to: ~p"/")
 
       {:error, razon} ->
@@ -39,5 +42,12 @@ defmodule WebWeb.PageController do
     conn
     |> put_flash(:error, "No files received")
     |> redirect(to: ~p"/")
+  end
+
+  # Private helper functions
+
+  defp build_success_message(reporte, total_files) do
+    "Successfully processed #{reporte.success_count} of #{total_files} file(s). " <>
+    "Check output/reporte_output.txt for details."
   end
 end

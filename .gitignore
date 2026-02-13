@@ -31,3 +31,4 @@ output/reporte_output.txt
 # Ignore tests integration files
 test_integration.exs
 test_upload.exs
+test_multiple_upload.exs
