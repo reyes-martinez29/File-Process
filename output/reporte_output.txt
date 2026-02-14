@@ -2,16 +2,16 @@
                       REPORTE DE PROCESAMIENTO DE ARCHIVOS
 ================================================================================
 
-Fecha de generación: 2026-02-13 21:28:15
+Fecha de generación: 2026-02-14 04:28:03
 Directorio procesado: /tmp
-Modo de procesamiento: Parallel
+Modo de procesamiento: Sequential
 
 --------------------------------------------------------------------------------
 RESUMEN EJECUTIVO
 --------------------------------------------------------------------------------
-Total de archivos procesados: 5
+Total de archivos procesados: 4
   - Archivos CSV: 2
-  - Archivos JSON: 2
+  - Archivos JSON: 1
   - Archivos LOG: 1
   - Archivos XML: 0
 
@@ -47,19 +47,6 @@ Totales Consolidados CSV:
 --------------------------------------------------------------------------------
 MÉTRICAS DE ARCHIVOS JSON
 --------------------------------------------------------------------------------
-[Archivo: sesiones.json]
-  * Total de usuarios registrados: 8
-  * Usuarios activos vs inactivos: 7 activos / 1 inactivos (87.5%)
-  * Promedio de duración de sesión: 30.0 minutos
-  * Total de páginas visitadas: 285
-  * Top 5 acciones más comunes:
-    1. login (12 veces)
-    2. logout (12 veces)
-    3. ver_dashboard (5 veces)
-    4. guardar (3 veces)
-    5. exportar_excel (2 veces)
-  * Hora pico de actividad: 8:00 (2 sesiones)
-
 [Archivo: usuarios.json]
   * Total de usuarios registrados: 10
   * Usuarios activos vs inactivos: 7 activos / 3 inactivos (70.0%)
@@ -75,8 +62,8 @@ MÉTRICAS DE ARCHIVOS JSON
 
 
 Totales Consolidados JSON:
-  - Usuarios totales: 18
-  - Sesiones totales: 22
+  - Usuarios totales: 10
+  - Sesiones totales: 10
 
 
 --------------------------------------------------------------------------------
@@ -111,9 +98,9 @@ Totales Consolidados LOG:
 ANÁLISIS DE RENDIMIENTO
 --------------------------------------------------------------------------------
 Tiempo total: 16ms (0.02s)
-Promedio por archivo: 3.2ms
-Modo utilizado: Parallel
-Archivos procesados: 5
+Promedio por archivo: 4.0ms
+Modo utilizado: Sequential
+Archivos procesados: 4
 
 --------------------------------------------------------------------------------
 ERRORES Y ADVERTENCIAS

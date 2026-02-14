@@ -32,3 +32,4 @@ output/reporte_output.txt
 test_integration.exs
 test_upload.exs
 test_multiple_upload.exs
+test_modes.exs
