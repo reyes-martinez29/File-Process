@@ -18,6 +18,8 @@ defmodule WebWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/results", PageController, :results
+    post "/results", PageController, :results
   end
 
   # Other scopes may use custom stacks.
