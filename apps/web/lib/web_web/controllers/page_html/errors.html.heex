@@ -1,0 +1,196 @@
+<div class="min-h-screen bg-slate-50 font-sans">
+  <header class="bg-white px-8 py-4 shadow-sm flex justify-between items-center border-b border-slate-100">
+    <div class="flex items-center gap-3">
+      <div class="bg-rose-100 p-2 rounded-lg text-rose-500">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-slate-800 leading-none">Reporte de Errores</h1>
+        <p class="text-sm text-slate-500">Análisis detallado de errores del procesamiento</p>
+      </div>
+    </div>
+    <nav class="flex gap-4">
+      <.link navigate={~p"/results"} class="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-slate-200 transition-colors">
+        ← Volver a Resultados
+      </.link>
+      <div class="bg-rose-500 text-white px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 shadow-lg shadow-rose-100">
+        <span class="bg-rose-400 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">!</span> Errores Detectados
+      </div>
+    </nav>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-8 space-y-8">
+    
+    <%!-- Resumen Ejecutivo --%>
+    <section class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+      <h2 class="text-2xl font-bold text-slate-800 mb-1">Resumen de Errores</h2>
+      <p class="text-slate-500 mb-8 text-sm">Estadísticas generales de errores detectados</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-slate-50 border border-slate-100 p-6 rounded-2xl relative overflow-hidden group">
+          <div class="absolute -right-2 -bottom-2 text-6xl opacity-5 group-hover:scale-110 transition-transform">📂</div>
+          <p class="text-3xl font-black text-slate-800"><%= @report.total_files %></p>
+          <p class="text-xs text-slate-400 font-bold uppercase tracking-tighter">Total Archivos</p>
+        </div>
+
+        <div class="bg-rose-50 border border-rose-100 p-6 rounded-2xl relative overflow-hidden group">
+          <div class="absolute -right-2 -bottom-2 text-6xl opacity-5 group-hover:scale-110 transition-transform">❌</div>
+          <p class="text-3xl font-black text-rose-600"><%= @report.error_count %></p>
+          <p class="text-xs text-slate-400 font-bold uppercase tracking-tighter">Archivos Fallidos</p>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-100 p-6 rounded-2xl relative overflow-hidden group">
+          <div class="absolute -right-2 -bottom-2 text-6xl opacity-5 group-hover:scale-110 transition-transform">⚠️</div>
+          <p class="text-3xl font-black text-amber-600"><%= @report.partial_count %></p>
+          <p class="text-xs text-slate-400 font-bold uppercase tracking-tighter">Parciales</p>
+        </div>
+
+        <div class="bg-red-50 border border-red-100 p-6 rounded-2xl relative overflow-hidden group">
+          <div class="absolute -right-2 -bottom-2 text-6xl opacity-5 group-hover:scale-110 transition-transform">🐛</div>
+          <% total_error_count = Enum.reduce(@report.results, 0, fn r, acc -> acc + length(r.errors) end) %>
+          <p class="text-3xl font-black text-red-600"><%= total_error_count %></p>
+          <p class="text-xs text-slate-400 font-bold uppercase tracking-tighter">Errores Totales</p>
+        </div>
+      </div>
+    </section>
+
+    <%!-- Detalle de Errores por Archivo --%>
+    <section class="space-y-4">
+      <%= for result <- Enum.filter(@report.results, fn r -> length(r.errors) > 0 end) do %>
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+          <%!-- File header --%>
+          <div class={[
+            "px-6 py-4 border-b flex items-center justify-between",
+            case result.status do
+              :error -> "bg-gradient-to-r from-rose-50 to-red-50 border-rose-100"
+              :partial -> "bg-gradient-to-r from-amber-50 to-orange-50 border-amber-100"
+              _ -> "bg-slate-50 border-slate-100"
+            end
+          ]}>
+            <div class="flex items-center gap-3">
+              <div class={[
+                "p-2 rounded-lg",
+                case result.type do
+                  :csv -> "bg-indigo-100 text-indigo-600"
+                  :json -> "bg-amber-100 text-amber-600"
+                  :xml -> "bg-green-100 text-green-600"
+                  :log -> "bg-purple-100 text-purple-600"
+                  _ -> "bg-gray-100 text-gray-600"
+                end
+              ]}>
+                <%= case result.type do %>
+                  <% :csv -> %>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  <% :json -> %>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                    </svg>
+                  <% :xml -> %>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                  <% :log -> %>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  <% _ -> %>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                <% end %>
+              </div>
+              
+              <div>
+                <h3 class="font-bold text-slate-800"><%= result.filename %></h3>
+                <p class="text-xs text-slate-500">
+                  <span class="inline-flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="font-bold"><%= length(result.errors) %></span> errores
+                  </span>
+                  <span class="mx-1">•</span>
+                  <span><%= result.lines_processed %> líneas procesadas</span>
+                  <%= if result.lines_failed > 0 do %>
+                    <span class="mx-1">•</span>
+                    <span class="text-rose-600 font-semibold"><%= result.lines_failed %> fallidas</span>
+                  <% end %>
+                </p>
+              </div>
+            </div>
+            
+            <%= case result.status do %>
+              <% :error -> %>
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700">
+                  ✕ Error
+                </span>
+              <% :partial -> %>
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
+                  ⚠ Parcial
+                </span>
+              <% _ -> %>
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
+                  ⓘ Info
+                </span>
+            <% end %>
+          </div>
+          
+          <%!-- Error list --%>
+          <div class="p-6 bg-slate-50/50">
+            <div class="space-y-3">
+              <%= for {error, index} <- Enum.with_index(result.errors, 1) do %>
+                <div class="bg-white border border-rose-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                  <div class="flex gap-3">
+                    <div class="flex-shrink-0 pt-0.5">
+                      <div class="w-7 h-7 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center text-xs font-bold">
+                        <%= index %>
+                      </div>
+                    </div>
+                    
+                    <div class="flex-1 min-w-0">
+                      <%= case error do %>
+                        <% {line_number, message} when is_integer(line_number) -> %>
+                          <div class="space-y-2">
+                            <div class="flex items-start justify-between gap-4">
+                              <p class="text-sm text-slate-700 font-mono leading-relaxed flex-1"><%= message %></p>
+                              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 text-rose-700 rounded-lg text-xs font-semibold border border-rose-200 whitespace-nowrap">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                                Línea <%= line_number %>
+                              </span>
+                            </div>
+                          </div>
+                        <% message when is_binary(message) -> %>
+                          <p class="text-sm text-slate-700 font-mono leading-relaxed"><%= message %></p>
+                        <% _ -> %>
+                          <p class="text-sm text-slate-400 italic">Formato de error desconocido</p>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+      
+      <%!-- Empty State --%>
+      <%= if Enum.all?(@report.results, fn r -> length(r.errors) == 0 end) do %>
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-12 text-center">
+          <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold text-slate-800 mb-2">¡Sin Errores!</h3>
+          <p class="text-slate-500 text-sm">Todos los archivos se procesaron exitosamente sin errores.</p>
+        </div>
+      <% end %>
+    </section>
+  </main>
+</div>

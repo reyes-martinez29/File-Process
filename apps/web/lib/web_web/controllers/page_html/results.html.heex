@@ -15,6 +15,18 @@
       <.link href={~p"/"} class="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-slate-200 transition-colors">
         ← Volver
       </.link>
+      
+      <%!-- View Errors Button - Shows total error count --%>
+      <% total_errors = Enum.reduce(@report.results, 0, fn r, acc -> acc + length(r.errors) end) %>
+      <%= if total_errors > 0 do %>
+        <.link navigate={~p"/errors"} class="bg-rose-500 text-white px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-rose-600 transition-colors shadow-lg shadow-rose-100">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          Ver Errores (<%= total_errors %>)
+        </.link>
+      <% end %>
+      
       <div class="bg-emerald-500 text-white px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 shadow-lg shadow-emerald-100">
         <span class="bg-emerald-400 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">✓</span> Reporte Listo
       </div>
@@ -148,6 +160,7 @@
                         :ok -> %{color: "emerald", icon: "✓", text: "Success"}
                         :error -> %{color: "rose", icon: "✕", text: "Error"}
                         :partial -> %{color: "amber", icon: "⚠", text: "Partial"}
+                        _ -> %{color: "slate", icon: "?", text: "Unknown"}
                       end %>
                       <span class={"px-3 py-1 rounded-full text-xs font-bold bg-#{status_config.color}-100 text-#{status_config.color}-700"}>
                         <%= status_config.icon %> <%= status_config.text %>
@@ -255,6 +268,7 @@
                         :ok -> %{color: "emerald", icon: "✓", text: "Success"}
                         :error -> %{color: "rose", icon: "✕", text: "Error"}
                         :partial -> %{color: "amber", icon: "⚠", text: "Partial"}
+                        _ -> %{color: "slate", icon: "?", text: "Unknown"}
                       end %>
                       <span class={"px-3 py-1 rounded-full text-xs font-bold bg-#{status_config.color}-100 text-#{status_config.color}-700"}>
                         <%= status_config.icon %> <%= status_config.text %>
@@ -367,6 +381,7 @@
                         :ok -> %{color: "emerald", icon: "✓", text: "Success"}
                         :error -> %{color: "rose", icon: "✕", text: "Error"}
                         :partial -> %{color: "amber", icon: "⚠", text: "Partial"}
+                        _ -> %{color: "slate", icon: "?", text: "Unknown"}
                       end %>
                       <span class={"px-3 py-1 rounded-full text-xs font-bold bg-#{status_config.color}-100 text-#{status_config.color}-700"}>
                         <%= status_config.icon %> <%= status_config.text %>
@@ -454,6 +469,7 @@
                         :ok -> %{color: "emerald", icon: "✓", text: "Success"}
                         :error -> %{color: "rose", icon: "✕", text: "Error"}
                         :partial -> %{color: "amber", icon: "⚠", text: "Partial"}
+                        _ -> %{color: "slate", icon: "?", text: "Unknown"}
                       end %>
                       <span class={"px-3 py-1 rounded-full text-xs font-bold bg-#{status_config.color}-100 text-#{status_config.color}-700"}>
                         <%= status_config.icon %> <%= status_config.text %>
@@ -635,6 +651,7 @@
                         :json -> %{color: "amber", icon: "📄", label: "JSON"}
                         :xml -> %{color: "green", icon: "📝", label: "XML"}
                         :log -> %{color: "purple", icon: "📋", label: "LOG"}
+                        _ -> %{color: "slate", icon: "❓", label: "UNKNOWN"}
                       end %>
                       <span class={"bg-#{type_config.color}-100 text-#{type_config.color}-700 px-3 py-1 rounded-lg text-xs font-bold"}>
                         <%= type_config.icon %> <%= type_config.label %>
@@ -647,6 +664,7 @@
                         :ok -> %{color: "emerald", icon: "✓"}
                         :error -> %{color: "rose", icon: "✕"}
                         :partial -> %{color: "amber", icon: "⚠"}
+                        _ -> %{color: "slate", icon: "?"}
                       end %>
                       <span class={"bg-#{status_config.color}-100 text-#{status_config.color}-700 px-2 py-1 rounded-full text-xs font-bold"}>
                         <%= status_config.icon %>
