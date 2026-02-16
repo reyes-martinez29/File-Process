@@ -28,12 +28,12 @@ defmodule WebWeb.PageController do
     # Step 4: Clean up all temporary files
     Enum.each(temp_files, &File.rm/1)
 
-    # Step 5: Show results on the same page
+    # Step 5: Render results page directly (no session needed)
     case resultado do
       {:ok, reporte} ->
         conn
         |> put_flash(:info, build_success_message(reporte, length(archivos)))
-        |> render(:home, report: reporte)
+        |> render(:results, report: reporte)
 
       {:error, razon} ->
         conn
@@ -53,6 +53,13 @@ defmodule WebWeb.PageController do
     |> render(:home, report: nil)
   end
 
+  def results(conn, _params) do
+    # Direct access to /results without processing - redirect to home
+    conn
+    |> put_flash(:error, "No processing report found. Please upload files first.")
+    |> redirect(to: ~p"/")
+  end
+
   # Private helper functions
 
   defp build_processing_options(mode) do
@@ -67,36 +74,4 @@ defmodule WebWeb.PageController do
   defp build_success_message(reporte, total_files) do
     "Successfully processed #{reporte.success_count} of #{total_files} file(s)."
   end
-
-  def results(conn, _params) do
-    # Datos de prueba para llenar las pestañas
-    archivos_csv = [
-      %{nombre: "ventas_enero.csv", filas: 150, total: "$24,399.93"},
-      %{nombre: "ventas_febrero.csv", filas: 182, total: "$26,721.37"},
-      %{nombre: "reporte_anual.csv", filas: 1205, total: "$154,200.10"}
-    ]
-
-    archivos_json = [
-      %{nombre: "config_sistema.json", status: "Cargado"},
-      %{nombre: "metadatos_proceso.json", status: "Procesado"}
-    ]
-
-    # Pasamos los datos al HTML mediante 'csvs' y 'jsons'
-    render(conn, :results, csvs: archivos_csv, jsons: archivos_json)
-  end
-
-
-  def results(conn, _params) do
-    render(conn, :results)
-  end
-
-  def results(conn, params) do
-
-  IO.inspect(params, label: "Form Data")
-
-  render(conn, :results)
-end
-
-
-
 end

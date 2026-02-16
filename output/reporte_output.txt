@@ -2,20 +2,20 @@
                       REPORTE DE PROCESAMIENTO DE ARCHIVOS
 ================================================================================
 
-Fecha de generación: 2026-02-14 04:28:03
+Fecha de generación: 2026-02-16 07:14:02
 Directorio procesado: /tmp
-Modo de procesamiento: Sequential
+Modo de procesamiento: Benchmark
 
 --------------------------------------------------------------------------------
 RESUMEN EJECUTIVO
 --------------------------------------------------------------------------------
-Total de archivos procesados: 4
+Total de archivos procesados: 7
   - Archivos CSV: 2
-  - Archivos JSON: 1
-  - Archivos LOG: 1
-  - Archivos XML: 0
+  - Archivos JSON: 2
+  - Archivos LOG: 2
+  - Archivos XML: 1
 
-Tiempo total de procesamiento: 0.02 segundos
+Tiempo total de procesamiento: 0.0 segundos
 Archivos con errores: 0
 Tasa de éxito: 100.0%
 
@@ -47,6 +47,19 @@ Totales Consolidados CSV:
 --------------------------------------------------------------------------------
 MÉTRICAS DE ARCHIVOS JSON
 --------------------------------------------------------------------------------
+[Archivo: sesiones.json]
+  * Total de usuarios registrados: 8
+  * Usuarios activos vs inactivos: 7 activos / 1 inactivos (87.5%)
+  * Promedio de duración de sesión: 30.0 minutos
+  * Total de páginas visitadas: 285
+  * Top 5 acciones más comunes:
+    1. login (12 veces)
+    2. logout (12 veces)
+    3. ver_dashboard (5 veces)
+    4. guardar (3 veces)
+    5. exportar_excel (2 veces)
+  * Hora pico de actividad: 8:00 (2 sesiones)
+
 [Archivo: usuarios.json]
   * Total de usuarios registrados: 10
   * Usuarios activos vs inactivos: 7 activos / 3 inactivos (70.0%)
@@ -62,13 +75,32 @@ MÉTRICAS DE ARCHIVOS JSON
 
 
 Totales Consolidados JSON:
-  - Usuarios totales: 10
-  - Sesiones totales: 10
+  - Usuarios totales: 18
+  - Sesiones totales: 22
 
 
 --------------------------------------------------------------------------------
 MÉTRICAS DE ARCHIVOS LOG
 --------------------------------------------------------------------------------
+[Archivo: aplicacion.log]
+  * Total de entradas: 71
+  * Distribución de logs por nivel:
+    - DEBUG: 10 (14.1%)
+    - INFO: 47 (66.2%)
+    - WARN: 6 (8.5%)
+    - ERROR: 8 (11.3%)
+    - FATAL: 0 (0.0%)
+  * Errores más frecuentes (análisis de mensajes):
+    1. "API externa retornó código 503..." (1 veces)
+    2. "Constraint violation: stock no puede ser negativo..." (1 veces)
+    3. "Error al actualizar stock del producto ID:4532..." (1 veces)
+  * Componentes con más errores:
+    1. Integration (2 errores)
+    2. Inventario (2 errores)
+    3. Pago (2 errores)
+    4. UI (2 errores)
+  * Errores críticos (ERROR + FATAL): 8
+
 [Archivo: sistema.log]
   * Total de entradas: 72
   * Distribución de logs por nivel:
@@ -91,16 +123,34 @@ MÉTRICAS DE ARCHIVOS LOG
 
 
 Totales Consolidados LOG:
-  - Entradas totales: 72
+  - Entradas totales: 143
+
+
+--------------------------------------------------------------------------------
+MÉTRICAS DE ARCHIVOS XML
+--------------------------------------------------------------------------------
+[Archivo: productos.xml]
+  * Total de productos: 5
+  * Valor total de inventario: $44,948.40
+  * Categorías: 4
+  * Items con stock bajo: 0
+  * Precio promedio: $415.99
 
 
 --------------------------------------------------------------------------------
 ANÁLISIS DE RENDIMIENTO
 --------------------------------------------------------------------------------
-Tiempo total: 16ms (0.02s)
-Promedio por archivo: 4.0ms
-Modo utilizado: Sequential
-Archivos procesados: 4
+Comparación Secuencial vs Paralelo:
+  * Tiempo secuencial: 0.0 segundos
+  * Tiempo paralelo: 0.0 segundos
+  * Factor de mejora: 1.0x veces más rápido
+  * Procesos utilizados: 7
+  * Memoria máxima: 83.65 MB
+
+Tiempo total: 2ms (0.0s)
+Promedio por archivo: 0.29ms
+Modo utilizado: Benchmark
+Archivos procesados: 7
 
 --------------------------------------------------------------------------------
 ERRORES Y ADVERTENCIAS
