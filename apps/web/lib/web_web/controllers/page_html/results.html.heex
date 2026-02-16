@@ -1,0 +1,132 @@
+<div class="min-h-screen bg-slate-50 font-sans">
+  <header class="bg-white px-8 py-4 shadow-sm flex justify-between items-center border-b border-slate-100">
+    <div class="flex items-center gap-3">
+      <div class="bg-amber-100 p-2 rounded-lg text-amber-500">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-slate-800 leading-none">Procesador de Archivos</h1>
+        <p class="text-sm text-slate-500">Sistema de procesamiento inteligente</p>
+      </div>
+    </div>
+    <nav class="flex gap-4">
+      <.link href={~p"/"} class="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-slate-200 transition-colors">
+        ← Volver
+      </.link>
+      <div class="bg-emerald-500 text-white px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 shadow-lg shadow-emerald-100">
+        <span class="bg-emerald-400 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">✓</span> Reporte Listo
+      </div>
+    </nav>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-8 space-y-8">
+    
+    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-wrap lg:flex-nowrap gap-8 justify-around">
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-indigo-50 rounded-xl text-indigo-500 text-xl">📅</div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Generación</p>
+          <p class="text-sm font-bold text-slate-700">2026-02-15</p>
+        </div>
+      </div>
+      <div class="h-10 w-[1px] bg-slate-100 hidden lg:block"></div>
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-slate-100 rounded-xl text-slate-500 text-xl">⚙️</div>  
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Modo</p>
+          <p class="text-sm font-bold text-slate-700">Parallel</p>
+        </div>
+      </div>
+    </div>
+
+    <section class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+      <h2 class="text-2xl font-bold text-slate-800 mb-1">Resumen Ejecutivo</h2>
+      <p class="text-slate-500 mb-8 text-sm">Métricas clave del procesamiento actual</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-slate-50 border border-slate-100 p-6 rounded-2xl relative overflow-hidden group">
+          <div class="absolute -right-2 -bottom-2 text-6xl opacity-5 group-hover:scale-110 transition-transform">📂</div>
+          <p class="text-3xl font-black text-slate-800"><%= length(@csvs) + length(@jsons) %></p>
+          <p class="text-xs text-slate-400 font-bold uppercase tracking-tighter">Archivos</p>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-100 p-6 rounded-2xl relative overflow-hidden group">
+          <div class="absolute -right-2 -bottom-2 text-6xl opacity-5 group-hover:scale-110 transition-transform">⏱️</div>
+          <p class="text-3xl font-black text-slate-800">0.08s</p>
+          <p class="text-xs text-slate-400 font-bold uppercase tracking-tighter">Tiempo Total</p>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-100 p-6 rounded-2xl relative overflow-hidden group">
+          <div class="absolute -right-2 -bottom-2 text-6xl opacity-5 group-hover:scale-110 transition-transform">⚡</div>
+          <p class="text-3xl font-black text-slate-800">11.14ms</p>
+          <p class="text-xs text-slate-400 font-bold uppercase tracking-tighter">Promedio</p>
+        </div>
+
+        <div class="bg-emerald-50 border border-emerald-100 p-6 rounded-2xl relative overflow-hidden group">
+          <div class="absolute -right-2 -bottom-2 text-6xl opacity-10 group-hover:scale-110 transition-transform">✅</div>
+          <p class="text-3xl font-black text-emerald-600">100%</p>
+          <p class="text-xs text-emerald-500 font-bold uppercase tracking-tighter">Tasa de Éxito</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100" x-data="{ tab: 'csv' }">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800 mb-1">Análisis Detallado</h2>
+          <p class="text-slate-500 text-sm">Desglose individual por tipo de formato</p>
+        </div>
+
+        <div class="flex bg-slate-100 p-1 rounded-2xl self-start">
+          <button 
+            @click="tab = 'csv'" 
+            x-bind:class="tab === 'csv' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'"
+            class="px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+          >
+            <span class="w-2 h-2 rounded-full bg-indigo-500"></span> CSV
+          </button>
+          <button 
+            @click="tab = 'json'" 
+            x-bind:class="tab === 'json' ? 'bg-white shadow-sm text-amber-600' : 'text-slate-500 hover:text-slate-700'"
+            class="px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+          >
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span> JSON
+          </button>
+          <button 
+            @click="tab = 'logs'" 
+            x-bind:class="tab === 'logs' ? 'bg-white shadow-sm text-rose-600' : 'text-slate-500 hover:text-slate-700'"
+            class="px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+          >
+            <span class="w-2 h-2 rounded-full bg-rose-500"></span> Logs
+          </button>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        
+        <div x-show="tab === 'csv'" style="display: none;">
+          <div class="bg-slate-900 rounded-2xl p-6 font-mono text-xs text-emerald-400 shadow-inner max-h-60 overflow-y-auto">
+            <p class="opacity-40 mb-2">// System Processing csv</p>
+          </div>
+        </div>
+
+        <div x-show="tab === 'json'" style="display: none;">
+          <div class="bg-slate-900 rounded-2xl p-6 font-mono text-xs text-emerald-400 shadow-inner max-h-60 overflow-y-auto">
+            <p class="opacity-40 mb-2">// System Processing json</p>
+          </div>
+        </div>
+
+        <div x-show="tab === 'logs'" style="display: none;">
+          <div class="bg-slate-900 rounded-2xl p-6 font-mono text-xs text-emerald-400 shadow-inner max-h-60 overflow-y-auto">
+            <p class="opacity-40 mb-2">// System Processing Logs</p>
+            <p><span class="text-emerald-600">[OK]</span> <%= DateTime.utc_now() %>: Proceso iniciado.</p>
+            <p><span class="text-emerald-600">[OK]</span> Archivos CSV detectados: <%= length(@csvs) %></p>
+            <p><span class="text-amber-500">[INFO]</span> Memoria optimizada para proceso paralelo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

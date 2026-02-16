@@ -1,3 +1,4 @@
+
 defmodule WebWeb.Router do
   use WebWeb, :router
 
@@ -19,6 +20,8 @@ defmodule WebWeb.Router do
 
     get "/", PageController, :home
     post "/upload", PageController, :upload
+    get "/results", PageController, :results
+    post "/results", PageController, :results
   end
 
   # Other scopes may use custom stacks.
