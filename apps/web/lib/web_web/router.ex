@@ -22,6 +22,7 @@ defmodule WebWeb.Router do
     post "/upload", PageController, :upload
     get "/results", PageController, :results
     get "/errors", PageController, :errors
+    post "/benchmark", PageController, :benchmark_results
   end
 
   # Other scopes may use custom stacks.
