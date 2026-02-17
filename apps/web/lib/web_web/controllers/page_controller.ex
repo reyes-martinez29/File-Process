@@ -6,6 +6,46 @@ defmodule WebWeb.PageController do
     render(conn, :home, report: nil)
   end
 
+def benchmark_results(conn, %{"archivos" => archivos}) when is_list(archivos) do
+  # PHASE 1: PRE-PROCESSING (Outside timing window)
+  # We prepare all files before starting the benchmark to ensure web-specific
+  # overhead (like file copying) doesn't pollute the performance metrics.
+  classified_files = Enum.map(archivos, fn archivo ->
+    # Define a temporary path in the system's temp directory
+    temp_path = Path.join(System.tmp_dir!(), archivo.filename)
+
+    # Synchronously copy the uploaded file to the temp location
+    File.cp!(archivo.path, temp_path)
+
+    # Manual type detection based on extension to match the core engine's expectations
+    extension = archivo.filename
+                |> Path.extname()
+                |> String.downcase()
+                |> String.replace(".", "")
+
+    type = case extension do
+      "csv" -> :csv
+      "json" -> :json
+      "xml" -> :xml
+      _ -> :txt
+    end
+
+    {type, temp_path}
+  end)
+
+  # PHASE 2: EXECUTION (Clean call)
+  # Invoking the Benchmark mode directly. At this point, files are already
+  # on disk, mimicking the environment of a console-based execution.
+  {_results, benchmark_data} = FProcess.Modes.Benchmark.run(classified_files, %{show_progress: false})
+
+  # PHASE 3: CLEANUP
+  # Removing temporary files to free up system resources
+  Enum.each(classified_files, fn {_, path} -> File.rm(path) end)
+
+  # PHASE 4: RENDERING
+  # Passing the clean benchmark data to the view
+  render(conn, :benchmark, data: benchmark_data)
+end
   def upload(conn, %{"archivos" => archivos, "processing_mode" => mode})
       when is_list(archivos) do
     # Process all uploaded files
