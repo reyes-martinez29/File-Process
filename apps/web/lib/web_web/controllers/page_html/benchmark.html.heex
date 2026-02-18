@@ -28,12 +28,11 @@
           </svg>
         </div>
         <p class="text-indigo-200 text-[10px] font-bold uppercase mb-2">Performance Speedup</p>
-        <%!-- Rendering speedup with float precision to avoid 0.0x --%>
         <p class="text-6xl font-black text-white">
-          <%= Float.round(@data.comparison.speedup_factor * 1.0, 2) %>x
+          <%= @data.comparison.speedup_factor %>x
         </p>
         <p class="text-indigo-100 text-sm mt-1">
-          Efficiency change: <%= Float.round(@data.comparison.time_saved_percent * 1.0, 1) %>%
+          Efficiency change: <%= @data.comparison.time_saved_percent %>%
         </p>
       </div>
     </div>
@@ -57,10 +56,10 @@
               <%= @data.sequential.duration_ms %> ms
             </td>
             <td class="p-6 text-slate-400">
-              <%= Float.round(@data.sequential.avg_time_per_file * 1.0, 3) %> ms
+              <%= :erlang.float_to_binary(@data.sequential.avg_time_per_file, decimals: 2) %> ms
             </td>
             <td class="p-6 text-slate-500 text-sm">
-              <%= Float.round(@data.sequential.memory_kb / 1024, 2) %> MB
+              <%= :erlang.float_to_binary(@data.sequential.memory_kb / 1024, decimals: 2) %> MB
             </td>
           </tr>
 
@@ -71,10 +70,10 @@
               <%= @data.parallel.duration_ms %> ms
             </td>
             <td class="p-6 text-slate-400">
-              <%= Float.round(@data.parallel.avg_time_per_file * 1.0, 3) %> ms
+              <%= :erlang.float_to_binary(@data.parallel.avg_time_per_file, decimals: 2) %> ms
             </td>
             <td class="p-6 text-indigo-300 text-sm font-bold">
-              <%= Float.round(@data.parallel.memory_kb / 1024, 2) %> MB
+              <%= :erlang.float_to_binary(@data.parallel.memory_kb / 1024, decimals: 2) %> MB
             </td>
           </tr>
         </tbody>
@@ -82,10 +81,28 @@
     </div>
 
     <%!-- Time Saved Footer --%>
-    <div class="mt-8 p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-center">
-      <p class="text-emerald-400 text-sm">
-        Time Saved: <span class="font-bold"><%= @data.comparison.time_saved_ms %> ms</span> with parallel concurrency.
-      </p>
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+        <p class="text-emerald-400 text-sm">
+          Time Saved: <span class="font-bold"><%= @data.comparison.time_saved_ms %> ms</span>
+        </p>
+        <p class="text-emerald-300 text-xs mt-1">
+          with parallel concurrency
+        </p>
+      </div>
+      
+      <div class="p-6 bg-slate-800/50 border border-slate-700 rounded-2xl">
+        <p class="text-slate-300 text-sm">
+          Success Rate: 
+          <span class="font-bold text-emerald-400"><%= @data.parallel.success_count %></span> / 
+          <span class="text-slate-400"><%= @data.total_files %></span>
+        </p>
+        <%= if @data.parallel.error_count > 0 do %>
+          <p class="text-rose-400 text-xs mt-1">
+            <%= @data.parallel.error_count %> errors detected
+          </p>
+        <% end %>
+      </div>
     </div>
 
   </div>

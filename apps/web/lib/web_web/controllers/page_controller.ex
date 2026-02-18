@@ -6,46 +6,50 @@ defmodule WebWeb.PageController do
     render(conn, :home, report: nil)
   end
 
-def benchmark_results(conn, %{"archivos" => archivos}) when is_list(archivos) do
-  # PHASE 1: PRE-PROCESSING (Outside timing window)
-  # We prepare all files before starting the benchmark to ensure web-specific
-  # overhead (like file copying) doesn't pollute the performance metrics.
-  classified_files = Enum.map(archivos, fn archivo ->
-    # Define a temporary path in the system's temp directory
-    temp_path = Path.join(System.tmp_dir!(), archivo.filename)
+  def benchmark_results(conn, %{"archivos" => archivos}) when is_list(archivos) do
+    # Step 0: Force garbage collection to simulate a "cold start"
+    # This helps get more consistent benchmark results by clearing VM caches
+    :erlang.garbage_collect()
+    Process.sleep(100)  # Small delay to let system stabilize
+    
+    # Step 1: Create temporary files with UNIQUE names to avoid OS caching issues
+    # Using timestamp + random suffix ensures each benchmark run uses fresh files
+    timestamp = System.system_time(:millisecond)
 
-    # Synchronously copy the uploaded file to the temp location
-    File.cp!(archivo.path, temp_path)
+    temp_files =
+      Enum.with_index(archivos, fn archivo, idx ->
+        # Create unique filename: timestamp_index_originalname
+        unique_name = "#{timestamp}_#{idx}_#{archivo.filename}"
+        temp_path = Path.join(System.tmp_dir!(), unique_name)
+        File.cp!(archivo.path, temp_path)
+        temp_path
+      end)
 
-    # Manual type detection based on extension to match the core engine's expectations
-    extension = archivo.filename
-                |> Path.extname()
-                |> String.downcase()
-                |> String.replace(".", "")
+    # Step 2: Build processing options for benchmark mode
+    opts = [benchmark: true, verbose: false]
 
-    type = case extension do
-      "csv" -> :csv
-      "json" -> :json
-      "xml" -> :xml
-      _ -> :txt
+    # Step 3: Process files using FProcess.process_files with benchmark mode
+    # This is the CORRECT way - same as CLI uses
+    resultado = FProcess.process_files(temp_files, opts)
+
+    # Step 4: Clean up temporary files
+    Enum.each(temp_files, &File.rm/1)
+
+    # Step 5: Render benchmark results
+    case resultado do
+      {:ok, reporte} ->
+        # Extract benchmark_data from the execution report
+        benchmark_data = reporte.benchmark_data
+
+        render(conn, :benchmark, data: benchmark_data)
+
+      {:error, razon} ->
+        conn
+        |> put_flash(:error, "Benchmark error: #{razon}")
+        |> redirect(to: ~p"/")
     end
+  end
 
-    {type, temp_path}
-  end)
-
-  # PHASE 2: EXECUTION (Clean call)
-  # Invoking the Benchmark mode directly. At this point, files are already
-  # on disk, mimicking the environment of a console-based execution.
-  {_results, benchmark_data} = FProcess.Modes.Benchmark.run(classified_files, %{show_progress: false})
-
-  # PHASE 3: CLEANUP
-  # Removing temporary files to free up system resources
-  Enum.each(classified_files, fn {_, path} -> File.rm(path) end)
-
-  # PHASE 4: RENDERING
-  # Passing the clean benchmark data to the view
-  render(conn, :benchmark, data: benchmark_data)
-end
   def upload(conn, %{"archivos" => archivos, "processing_mode" => mode})
       when is_list(archivos) do
     # Process all uploaded files

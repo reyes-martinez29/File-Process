@@ -44,7 +44,9 @@ defmodule FProcess do
     {:mode, :sequential | :parallel} |
     {:timeout, pos_integer()} |
     {:max_retries, non_neg_integer()} |
-    {:output_dir, String.t()}
+    {:output_dir, String.t()} |
+    {:benchmark, boolean()} |
+    {:verbose, boolean()}
 
   @type process_result :: {:ok, FProcess.Structs.ExecutionReport.t()} | {:error, String.t()}
 
