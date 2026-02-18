@@ -219,22 +219,19 @@
     });
   }
 
-document.getElementById('file-input').addEventListener('change', function(e) {
+// This script validates file extensions to fix the Linux folder-navigation bug
+  document.getElementById('file-input').addEventListener('change', function(e) {
     const allowedExtensions = /(\.csv|\.json|\.xml|\.log)$/i;
     const files = Array.from(e.target.files);
     
-    // Check if any file violates the extension rules
+    // Check for invalid extensions
     const invalidFiles = files.filter(file => !allowedExtensions.exec(file.name));
 
     if (invalidFiles.length > 0) {
       const fileNames = invalidFiles.map(f => f.name).join(", ");
-      alert("Formatos no soportados detectados: " + fileNames + "\nSolo se permiten CSV, JSON, XML y LOG.");
-      
-      // Reset the input so no invalid files are sent
-      e.target.value = ''; 
-    } else if (files.length > 0) {
-      // If all files are valid, submit the form automatically for a smoother UX
-      document.getElementById('upload-form').submit();
+      alert("Formatos no soportados: " + fileNames + "\nSolo se permiten CSV, JSON, XML y LOG.");
+      e.target.value = ''; // Clear selection if invalid
     }
+    // Auto-submit was removed to let the user choose the Processing Mode
   });
 </script>
