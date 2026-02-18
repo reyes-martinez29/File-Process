@@ -49,7 +49,7 @@
                 </p>
                 <p class="text-xs text-slate-400 uppercase tracking-widest font-bold">CSV • XML • JSON • LOG</p>
               </div>
-              <input type="file" name="archivos[]" id="file-input" accept=".csv,.json,.xml,.log" multiple class="hidden" />
+              <input type="file" name="archivos[]" id="file-input" accept=".csv,text/csv,.json,application/json,.xml,text/xml,application/xml,.log,text/plain" multiple class="hidden" />
             </label>
             
             <div class="mt-6">
@@ -218,4 +218,28 @@
       }
     });
   }
+
+// This script validates file extensions to fix the Linux folder-navigation bug
+  document.getElementById('file-input').addEventListener('change', function(e) {
+    const allowedExtensions = /(\.csv|\.json|\.xml|\.log)$/i;
+    const files = Array.from(e.target.files);
+    
+    // Check for invalid extensions
+    const invalidFiles = files.filter(file => !allowedExtensions.exec(file.name));
+
+    if (invalidFiles.length > 0) {
+      const fileNames = invalidFiles.map(f => f.name).join(", ");
+      alert("Formatos no soportados: " + fileNames + "\nSolo se permiten CSV, JSON, XML y LOG.");
+      e.target.value = ''; // Clear selection if invalid
+    }
+  });
+  document.getElementById('upload-form').addEventListener('submit', function(e) {
+  const fileInput = document.getElementById('file-input');
+  
+  if (!fileInput.files || fileInput.files.length === 0) {
+  
+    e.preventDefault(); 
+    alert("Primero tienes que seleccionar al menos 1 archivo.");
+  }
+});
 </script>
