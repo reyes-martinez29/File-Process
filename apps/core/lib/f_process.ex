@@ -43,6 +43,7 @@ defmodule FProcess do
   @type process_option ::
     {:mode, :sequential | :parallel} |
     {:timeout, pos_integer()} |
+    {:max_workers, pos_integer()} |
     {:max_retries, non_neg_integer()} |
     {:output_dir, String.t()} |
     {:benchmark, boolean()} |
@@ -66,8 +67,11 @@ defmodule FProcess do
 
   - `:mode` - Processing mode: `:sequential` or `:parallel` (default: `:parallel`)
   - `:timeout` - Timeout per file in milliseconds (default: 30,000)
+  - `:max_workers` - Maximum concurrent workers for parallel mode (default: 8)
   - `:max_retries` - Maximum retry attempts for failed files (default: 3)
   - `:output_dir` - Output directory for reports (default: "output")
+  - `:benchmark` - Enable benchmark mode for performance comparison (default: false)
+  - `:verbose` - Enable verbose logging (default: false)
 
   ## Returns
 

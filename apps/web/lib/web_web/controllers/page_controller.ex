@@ -7,11 +7,6 @@ defmodule WebWeb.PageController do
   end
 
   def benchmark_results(conn, %{"archivos" => archivos}) when is_list(archivos) do
-    # Step 0: Force garbage collection to simulate a "cold start"
-    # This helps get more consistent benchmark results by clearing VM caches
-    :erlang.garbage_collect()
-    Process.sleep(100)  # Small delay to let system stabilize
-    
     # Step 1: Create temporary files with UNIQUE names to avoid OS caching issues
     # Using timestamp + random suffix ensures each benchmark run uses fresh files
     timestamp = System.system_time(:millisecond)
@@ -50,7 +45,7 @@ defmodule WebWeb.PageController do
     end
   end
 
-  def upload(conn, %{"archivos" => archivos, "processing_mode" => mode})
+  def upload(conn, %{"archivos" => archivos, "processing_mode" => mode} = params)
       when is_list(archivos) do
     # Process all uploaded files
     # Phoenix uploads don't preserve extensions, so we create temp files with proper names
@@ -63,8 +58,8 @@ defmodule WebWeb.PageController do
         temp_path
       end)
 
-    # Step 2: Build processing options based on selected mode
-    opts = build_processing_options(mode)
+    # Step 2: Build processing options based on selected mode and advanced config
+    opts = build_processing_options(mode, params)
 
     # Step 3: Process all files with FProcess using selected mode
     resultado = FProcess.process_files(temp_files, opts)
@@ -144,23 +139,118 @@ defmodule WebWeb.PageController do
     end
   end
 
-  # Private helper functions
+  # ============================================================================
+  # Private Helper Functions
+  # ============================================================================
 
-  defp build_processing_options(mode) do
-    case mode do
+  # Build processing options based on mode and additional parameters.
+  #
+  # For parallel mode, extracts and validates max_workers and timeout configuration.
+  # Applies safe default values and boundaries to prevent resource exhaustion.
+  defp build_processing_options(mode, params) when is_map(params) do
+    base_opts = case mode do
       "sequential" -> [mode: :sequential]
       "parallel" -> [mode: :parallel]
       "benchmark" -> [benchmark: true]
       _ -> [mode: :parallel]  # Default to parallel if unknown
     end
+
+    # Add advanced configuration for parallel mode
+    if mode == "parallel" do
+      base_opts
+      |> maybe_add_max_workers(params)
+      |> maybe_add_timeout(params)
+    else
+      base_opts
+    end
   end
 
+  # Extract and validate max_workers parameter.
+  #
+  # Ensures the value is within safe boundaries:
+  # - Minimum: 1 worker
+  # - Maximum: System.schedulers_online() * 2 (prevents VM saturation)
+  # - Default: 8 workers
+  #
+  # Using more workers than CPU cores * 2 can degrade performance due to
+  # excessive context switching and resource contention.
+  defp maybe_add_max_workers(opts, params) do
+    case Map.get(params, "max_workers") do
+      nil ->
+        opts
+
+      value when is_binary(value) ->
+        max_allowed = System.schedulers_online() * 2
+        workers = validate_integer(value, min: 1, max: max_allowed, default: 8)
+        Keyword.put(opts, :max_workers, workers)
+
+      _ ->
+        opts
+    end
+  end
+
+  # Extract and validate timeout parameter.
+  #
+  # Ensures the value is within safe boundaries:
+  # - Minimum: 1000ms (1 second) - prevents premature timeouts
+  # - Maximum: 60000ms (60 seconds) - prevents indefinite blocking
+  # - Default: 30000ms (30 seconds)
+  #
+  # Timeouts that are too low cause false failures, while timeouts that are
+  # too high can block the web request and degrade user experience.
+  defp maybe_add_timeout(opts, params) do
+    case Map.get(params, "timeout") do
+      nil ->
+        opts
+
+      value when is_binary(value) ->
+        timeout = validate_integer(value, min: 1_000, max: 60_000, default: 30_000)
+        Keyword.put(opts, :timeout, timeout)
+
+      _ ->
+        opts
+    end
+  end
+
+  # Validate and clamp an integer value within boundaries.
+  #
+  # Parameters:
+  # - value: String representation of integer
+  # - min: Minimum allowed value
+  # - max: Maximum allowed value
+  # - default: Default value if parsing fails
+  #
+  # Returns: Validated integer clamped between min and max
+  defp validate_integer(value, opts) do
+    min = Keyword.fetch!(opts, :min)
+    max = Keyword.fetch!(opts, :max)
+    default = Keyword.fetch!(opts, :default)
+
+    case Integer.parse(value) do
+      {num, _} when num >= min and num <= max ->
+        num
+
+      {num, _} when num < min ->
+        min
+
+      {num, _} when num > max ->
+        max
+
+      :error ->
+        default
+    end
+  end
+
+  # Build success message for flash notification.
   defp build_success_message(reporte, total_files) do
     "Successfully processed #{reporte.success_count} of #{total_files} file(s)."
   end
 
+  # Generate unique report ID for ETS storage.
+  #
+  # Uses cryptographically strong random bytes to ensure uniqueness.
+  # The ID is URL-safe and keeps the session cookie small (~22 bytes).
   defp generate_report_id do
-    # Generate unique ID using random bytes (keeps session cookie small)
     :crypto.strong_rand_bytes(16) |> Base.url_encode64(padding: false)
   end
 end
