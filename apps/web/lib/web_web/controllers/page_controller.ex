@@ -1,5 +1,6 @@
 defmodule WebWeb.PageController do
   use WebWeb, :controller
+  require Logger
 
   # File size limits (security/DoS prevention)
   @max_file_size_mb 50
@@ -53,12 +54,21 @@ defmodule WebWeb.PageController do
 
   def upload(conn, %{"archivos" => archivos, "processing_mode" => mode} = params)
       when is_list(archivos) do
+    # Generate request ID for tracking throughout the request lifecycle
+    request_id = generate_request_id()
+    ip = get_client_ip(conn)
+
+    # Set structured logging metadata for this request
+    Logger.metadata(request_id: request_id, ip: ip, file_count: length(archivos))
+    Logger.info("File upload request received", mode: mode, file_count: length(archivos))
+
     # Security: Validate file sizes before processing (prevents DoS/OOM)
     case validate_file_sizes(archivos) do
       :ok ->
-        process_upload(conn, archivos, mode, params)
+        process_upload(conn, archivos, mode, params, request_id)
 
       {:error, reason} ->
+        Logger.warning("File size validation failed", reason: reason)
         conn
         |> put_flash(:error, reason)
         |> render(:home, report: nil)
@@ -77,7 +87,11 @@ defmodule WebWeb.PageController do
   end
 
   # Actual processing logic (separated for cleaner validation flow)
-  defp process_upload(conn, archivos, mode, params) do
+  defp process_upload(conn, archivos, mode, params, request_id) do
+    start_time = System.monotonic_time(:millisecond)
+
+    Logger.info("Starting file processing", mode: mode, file_count: length(archivos))
+
     # Process all uploaded files
     # Phoenix uploads don't preserve extensions, so we create temp files with proper names
 
@@ -95,12 +109,29 @@ defmodule WebWeb.PageController do
     # Step 3: Process all files with FProcess using selected mode
     resultado = FProcess.process_files(temp_files, opts)
 
+    duration_ms = System.monotonic_time(:millisecond) - start_time
+
     # Step 4: Clean up all temporary files
     Enum.each(temp_files, &File.rm/1)
 
     # Step 5: Store report in ETS and save only ID in session (avoids cookie overflow)
     case resultado do
       {:ok, reporte} ->
+        # Log success with structured metrics
+        Logger.info("File processing completed successfully",
+          duration_ms: duration_ms,
+          files_processed: length(archivos),
+          success_count: reporte.success_count,
+          error_count: reporte.error_count
+        )
+
+        # Emit telemetry event for monitoring/observability
+        :telemetry.execute(
+          [:web, :upload, :success],
+          %{duration: duration_ms, file_count: length(archivos)},
+          %{mode: mode, request_id: request_id}
+        )
+
         # Generate unique ID and store report in ETS with automatic cleanup
         report_id = generate_report_id()
         Web.ReportStore.put(report_id, reporte)
@@ -111,6 +142,19 @@ defmodule WebWeb.PageController do
         |> render(:results, report: reporte)
 
       {:error, razon} ->
+        # Log error with context
+        Logger.error("File processing failed",
+          duration_ms: duration_ms,
+          reason: razon
+        )
+
+        # Emit telemetry event for error tracking
+        :telemetry.execute(
+          [:web, :upload, :error],
+          %{duration: duration_ms},
+          %{reason: razon, request_id: request_id}
+        )
+
         conn
         |> put_flash(:error, "Error: #{razon}")
         |> render(:home, report: nil)
@@ -307,5 +351,29 @@ defmodule WebWeb.PageController do
   # The ID is URL-safe and keeps the session cookie small (~22 bytes).
   defp generate_report_id do
     :crypto.strong_rand_bytes(16) |> Base.url_encode64(padding: false)
+  end
+
+  # Generate unique request ID for distributed tracing and logging.
+  defp generate_request_id do
+    :crypto.strong_rand_bytes(8) |> Base.url_encode64(padding: false)
+  end
+
+  # Extract client IP address from connection.
+  # Handles both direct connections and proxied requests (X-Forwarded-For header).
+  defp get_client_ip(conn) do
+    case Plug.Conn.get_req_header(conn, "x-forwarded-for") do
+      [ip | _] ->
+        # Take first IP from X-Forwarded-For chain
+        ip
+        |> String.split(",")
+        |> List.first()
+        |> String.trim()
+
+      [] ->
+        # Use remote_ip from conn
+        conn.remote_ip
+        |> :inet.ntoa()
+        |> to_string()
+    end
   end
 end

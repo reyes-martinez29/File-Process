@@ -272,7 +272,7 @@ defmodule WebWeb.PageControllerTest do
     test "GET /results without session redirects to home", %{conn: conn} do
       conn = get(conn, ~p"/results")
       assert redirected_to(conn) == ~p"/"
-      assert get_flash(conn, :error) =~ "No processing report found"
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "No processing report found"
     end
 
     test "GET /results with invalid report_id redirects to home", %{conn: conn} do
@@ -282,7 +282,7 @@ defmodule WebWeb.PageControllerTest do
       |> get(~p"/results")
 
       assert redirected_to(conn) == ~p"/"
-      assert get_flash(conn, :error) =~ "Report expired or not found"
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Report expired or not found"
     end
 
     test "GET /results with valid report_id displays results", %{conn: conn} do
@@ -325,7 +325,7 @@ defmodule WebWeb.PageControllerTest do
     test "GET /errors without session redirects to home", %{conn: conn} do
       conn = get(conn, ~p"/errors")
       assert redirected_to(conn) == ~p"/"
-      assert get_flash(conn, :error) =~ "No processing report found"
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "No processing report found"
     end
 
     test "GET /errors with valid report_id displays error page", %{conn: conn} do
@@ -427,34 +427,5 @@ defmodule WebWeb.PageControllerTest do
     dest_path = Path.join(System.tmp_dir!(), "test_#{:erlang.unique_integer([:positive])}_#{source_filename}")
     File.cp!(source_path, dest_path)
     dest_path
-  end
-
-  defp copy_error_file(source_filename) do
-    # Go up to project root from apps/web
-    project_root = Path.join([File.cwd!(), "..", ".."])
-    source_path = Path.join([project_root, "data", "error", source_filename])
-    dest_path = Path.join(System.tmp_dir!(), "test_error_#{:erlang.unique_integer([:positive])}_#{source_filename}")
-    File.cp!(source_path, dest_path)
-    dest_path
-  end
-
-  defp valid_csv_path do
-    project_root = Path.join([File.cwd!(), "..", ".."])
-    Path.join([project_root, "data", "valid", "ventas_enero.csv"])
-  end
-
-  defp valid_json_path do
-    project_root = Path.join([File.cwd!(), "..", ".."])
-    Path.join([project_root, "data", "valid", "usuarios.json"])
-  end
-
-  defp error_csv_path do
-    project_root = Path.join([File.cwd!(), "..", ".."])
-    Path.join([project_root, "data", "error", "ventas_corrupto.csv"])
-  end
-
-  defp error_json_path do
-    project_root = Path.join([File.cwd!(), "..", ".."])
-    Path.join([project_root, "data", "error", "usuarios_malformado.json"])
   end
 end
