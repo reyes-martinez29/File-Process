@@ -19,6 +19,33 @@ erl_crash.dump
 # Also ignore archive artifacts (built via "mix archive.build").
 *.ez
 
-# Ignore package tarball (built via "mix hex.build").
-f_process-*.tar
+# Ignore the Agents.md files
+**/AGENTS.md
 
+# Ignore ElixirLS files
+.elixir_ls/
+
+# Output files from processing 
+output/reporte_output.txt
+
+# Ignore tests integration files
+test_integration.exs
+test_upload.exs
+test_multiple_upload.exs
+test_modes.exs
+test_upload_now.exs
+
+
+# Umbrella apps build folders
+apps/*/_build/
+
+# Mix artifacts
+.mix/
+.elixir_ls/
+
+# Output files
+output/
+apps/core/output/
+
+# BEAM files (extra security measure to prevent accidentally committing compiled files)
+*.beam

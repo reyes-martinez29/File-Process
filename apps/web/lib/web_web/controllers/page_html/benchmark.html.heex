@@ -1,0 +1,109 @@
+<%!-- Benchmark specialized view: Focused on performance comparison metrics --%>
+<div class="min-h-screen bg-slate-950 text-slate-200 font-sans p-8">
+  <div class="max-w-5xl mx-auto">
+    
+    <%!-- Header --%>
+    <div class="flex justify-between items-center mb-12 border-b border-slate-800 pb-6">
+      <div>
+        <h1 class="text-3xl font-black tracking-tighter text-white">SYSTEM BENCHMARK</h1>
+        <p class="text-slate-500 font-mono text-xs">Execution Mode: Parallel vs Sequential</p>
+      </div>
+      <.link href={~p"/"} class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-full transition-all">
+        NEW TEST
+      </.link>
+    </div>
+
+    <%!-- Main Cards --%>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+      <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl">
+        <p class="text-slate-500 text-[10px] font-bold uppercase mb-2">Total Processed</p>
+        <p class="text-5xl font-black text-white"><%= @data.total_files %></p>
+        <p class="text-slate-400 text-xs mt-1">Files in directory</p>
+      </div>
+
+      <div class="md:col-span-2 bg-indigo-600 p-8 rounded-3xl relative overflow-hidden group">
+        <div class="absolute right-0 top-0 p-8 opacity-20 group-hover:scale-110 transition-transform">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <p class="text-indigo-200 text-[10px] font-bold uppercase mb-2">Performance Speedup</p>
+        <p class="text-6xl font-black text-white">
+          <%= @data.comparison.speedup_factor %>x
+        </p>
+        <p class="text-indigo-100 text-sm mt-1">
+          Efficiency change: <%= @data.comparison.time_saved_percent %>%
+        </p>
+      </div>
+    </div>
+
+    <%!-- Comparison Table --%>
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-slate-800/50">
+          <tr>
+            <th class="p-6 text-xs font-bold uppercase text-slate-400">Strategy</th>
+            <th class="p-6 text-xs font-bold uppercase text-slate-400">Total Time</th>
+            <th class="p-6 text-xs font-bold uppercase text-slate-400">Avg per file</th>
+            <th class="p-6 text-xs font-bold uppercase text-slate-400">Peak Memory</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800">
+          <%!-- Sequential Row --%>
+          <tr class="hover:bg-slate-800/20 transition-colors">
+            <td class="p-6 font-bold">Sequential</td>
+            <td class="p-6 font-mono text-amber-500">
+              <%= @data.sequential.duration_ms %> ms
+            </td>
+            <td class="p-6 text-slate-400">
+              <%= :erlang.float_to_binary(@data.sequential.avg_time_per_file, decimals: 2) %> ms
+            </td>
+            <td class="p-6 text-slate-500 text-sm">
+              <%= :erlang.float_to_binary(@data.sequential.memory_kb / 1024, decimals: 2) %> MB
+            </td>
+          </tr>
+
+          <%!-- Parallel Row --%>
+          <tr class="bg-indigo-500/5 hover:bg-indigo-500/10 transition-colors">
+            <td class="p-6 font-bold text-indigo-400 italic">Parallel (Optimized)</td>
+            <td class="p-6 font-mono text-indigo-400">
+              <%= @data.parallel.duration_ms %> ms
+            </td>
+            <td class="p-6 text-slate-400">
+              <%= :erlang.float_to_binary(@data.parallel.avg_time_per_file, decimals: 2) %> ms
+            </td>
+            <td class="p-6 text-indigo-300 text-sm font-bold">
+              <%= :erlang.float_to_binary(@data.parallel.memory_kb / 1024, decimals: 2) %> MB
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <%!-- Time Saved Footer --%>
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+        <p class="text-emerald-400 text-sm">
+          Time Saved: <span class="font-bold"><%= @data.comparison.time_saved_ms %> ms</span>
+        </p>
+        <p class="text-emerald-300 text-xs mt-1">
+          with parallel concurrency
+        </p>
+      </div>
+      
+      <div class="p-6 bg-slate-800/50 border border-slate-700 rounded-2xl">
+        <p class="text-slate-300 text-sm">
+          Success Rate: 
+          <span class="font-bold text-emerald-400"><%= @data.parallel.success_count %></span> / 
+          <span class="text-slate-400"><%= @data.total_files %></span>
+        </p>
+        <%= if @data.parallel.error_count > 0 do %>
+          <p class="text-rose-400 text-xs mt-1">
+            <%= @data.parallel.error_count %> errors detected
+          </p>
+        <% end %>
+      </div>
+    </div>
+
+  </div>
+</div>

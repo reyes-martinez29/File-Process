@@ -1,0 +1,437 @@
+<div class="min-h-screen bg-slate-50 font-sans">
+  <header class="bg-white px-8 py-4 shadow-sm flex justify-between items-center border-b border-slate-100">
+    <div class="flex items-center gap-3">
+      <div class="bg-amber-100 p-2 rounded-lg text-amber-500">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-slate-800 leading-none">Procesador de Archivos</h1>
+        <p class="text-sm text-slate-500">Sistema de procesamiento inteligente</p>
+      </div>
+    </div>
+    <nav class="flex gap-4">
+      <button class="bg-indigo-600 text-white px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 text-nowrap">
+        <span class="bg-indigo-400 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">1</span> Configuración
+      </button>
+      <button class="bg-slate-100 text-slate-400 px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 cursor-not-allowed text-nowrap">
+        <span class="bg-slate-300 w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white">2</span> Resultados
+      </button>
+    </nav>
+  </header>
+
+  <main class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 p-8 items-start">
+    <div class="flex-1 w-full space-y-8">
+      <section class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+        <h2 class="text-2xl font-bold text-slate-800 mb-1">Configuración de Procesamiento</h2>
+        <p class="text-slate-500 mb-8">Configure las opciones para procesar sus archivos</p>
+
+        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+          <div class="flex items-center gap-2 mb-4 text-amber-500 font-semibold">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+             </svg>
+             Selección de Archivos
+          </div>
+          
+          <%!-- Main configuration form --%>
+          <.form :let={_f} for={%{}} action={~p"/upload"} multipart id="upload-form">
+            <label class="group relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-indigo-200 bg-white rounded-2xl cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/50 transition-all duration-300">
+              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <div class="p-4 bg-indigo-50 rounded-full group-hover:scale-110 transition-transform duration-300 mb-4">
+                  <svg class="w-10 h-10 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                  </svg>
+                </div>
+                <p class="mb-2 text-sm text-slate-700 font-semibold">
+                  <span class="text-indigo-600 underline">Haz clic para cargar</span> o arrastra y suelta
+                </p>
+                <p class="text-xs text-slate-400 uppercase tracking-widest font-bold">CSV • XML • JSON • LOG</p>
+              </div>
+              <input type="file" name="archivos[]" id="file-input" accept=".csv,.json,.xml,.log" multiple class="hidden" />
+            </label>
+            
+            <div class="mt-6">
+              <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">Modo de Procesamiento</h3>
+              
+              <div class="flex flex-col gap-3">
+                <%!-- Sequential Mode --%>
+                <label class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/30 transition-all group">
+                  <div class="flex items-center gap-3">
+                    <div class="p-2 bg-slate-100 rounded-lg text-slate-500 group-hover:bg-slate-200">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <span class="block text-sm font-bold text-slate-800">Modo Secuencial</span>
+                      <span class="block text-[11px] text-slate-400">Procesa un archivo a la vez</span>
+                    </div>
+                  </div>
+                  <div class="relative flex items-center">
+                    <input type="radio" name="processing_mode" value="sequential" checked class="peer h-6 w-6 appearance-none rounded-full border-2 border-slate-300 checked:bg-indigo-600 checked:border-indigo-600 transition-all" />
+                    <div class="absolute left-1.5 w-3 h-3 bg-white rounded-full opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"></div>
+                  </div>
+                </label>
+
+                <%!-- Parallel Mode --%>
+                <label class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/30 transition-all group">
+                  <div class="flex items-center gap-3">
+                    <div class="p-2 bg-blue-50 rounded-lg text-blue-500 group-hover:bg-blue-100">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                      </svg>
+                    </div>
+                    <div>
+                      <span class="block text-sm font-bold text-slate-800">Modo Paralelo</span>
+                      <span class="block text-[11px] text-slate-400">Múltiples archivos simultáneos</span>
+                    </div>
+                  </div>
+                  <div class="relative flex items-center">
+                    <input type="radio" name="processing_mode" id="mode-parallel" value="parallel" class="peer h-6 w-6 appearance-none rounded-full border-2 border-slate-300 checked:bg-indigo-600 checked:border-indigo-600 transition-all" />
+                    <div class="absolute left-1.5 w-3 h-3 bg-white rounded-full opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"></div>
+                  </div>
+                </label>
+
+                <%!-- Benchmark Mode --%>
+                <label class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/30 transition-all group">
+                  <div class="flex items-center gap-3">
+                    <div class="p-2 bg-amber-50 rounded-lg text-amber-500 group-hover:bg-amber-100">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <span class="block text-sm font-bold text-slate-800">Modo Benchmark</span>
+                      <span class="block text-[11px] text-slate-400">Métricas de rendimiento</span>
+                    </div>
+                  </div>
+                  <div class="relative flex items-center">
+                    <%!-- Added ID 'mode-benchmark' to identify it in JS --%>
+                    <input type="radio" name="processing_mode" id="mode-benchmark" value="benchmark" class="peer h-6 w-6 appearance-none rounded-full border-2 border-slate-300 checked:bg-indigo-600 checked:border-indigo-600 transition-all" />
+                    <div class="absolute left-1.5 w-3 h-3 bg-white rounded-full opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"></div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <%!-- Advanced Settings Toggle (Parallel Mode Only) --%>
+            <div id="advanced-toggle-container" class="mt-6 hidden">
+              <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer hover:text-slate-800 transition-colors group">
+                <input type="checkbox" id="show-advanced" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer" />
+                <span class="font-medium">Show Advanced Configuration</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </label>
+              <p class="text-[11px] text-slate-400 mt-2 ml-6">
+                Using system defaults: 8 workers, 30s timeout
+              </p>
+            </div>
+
+            <%!-- Advanced Configuration Section (Hidden by Default) --%>
+            <div id="parallel-config" class="mt-4 hidden">
+              <div class="border-t border-slate-200 pt-6">
+                <div class="flex items-center gap-2 mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                  </svg>
+                  <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Advanced Settings</h3>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <%!-- Max Workers Configuration --%>
+                  <div class="bg-white p-4 rounded-xl border border-slate-200">
+                    <label for="max-workers" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                      Max Workers
+                    </label>
+                    <input 
+                      type="number" 
+                      name="max_workers" 
+                      id="max-workers"
+                      min="1" 
+                      max={System.schedulers_online() * 2}
+                      value="8"
+                      class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    />
+                    <p class="mt-2 text-[10px] text-slate-400 leading-relaxed">
+                      Number of concurrent workers (1-{System.schedulers_online() * 2}). 
+                      Higher values increase CPU usage. Recommended: {System.schedulers_online()}-{System.schedulers_online() * 2} for your system.
+                    </p>
+                  </div>
+
+                  <%!-- Timeout Configuration --%>
+                  <div class="bg-white p-4 rounded-xl border border-slate-200">
+                    <label for="timeout" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                      Timeout (ms)
+                    </label>
+                    <input 
+                      type="number" 
+                      name="timeout" 
+                      id="timeout"
+                      min="1000" 
+                      max="60000"
+                      step="1000"
+                      value="30000"
+                      class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    />
+                    <p class="mt-2 text-[10px] text-slate-400 leading-relaxed">
+                      Max time per file in milliseconds (1,000-60,000). 
+                      Default: 30,000ms (30s). Increase for large files.
+                    </p>
+                  </div>
+                </div>
+
+                <%!-- Performance Warning --%>
+                <div class="mt-4 flex gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <div>
+                    <p class="text-xs font-semibold text-amber-700">Performance Note</p>
+                    <p class="text-[11px] text-amber-600 mt-1">
+                      Setting too many workers may saturate your CPU and degrade performance. 
+                      Start with default values and adjust based on your system's capabilities.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </.form>
+        </div>
+      </section>
+      
+      <section class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+        <div class="flex justify-end">
+          <%!-- Submit button linked to 'upload-form' --%>
+          <button type="submit" form="upload-form" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl font-bold transition-all shadow-xl shadow-indigo-100 flex items-center gap-2 group">
+            Comenzar Procesamiento
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <%!-- Right Aside: Preview --%>
+    <aside class="w-full lg:w-[400px] flex-shrink-0 sticky top-8">
+      <section class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+        <h2 class="text-2xl font-bold text-slate-800 mb-1">Vista Previa</h2>
+        <p class="text-slate-500 mb-8">Resumen de la carga actual</p>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Archivos</p>
+            <p id="count-display" class="text-2xl font-bold text-slate-800">0</p>
+          </div>
+          <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 text-center">
+            <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Peso Total</p>
+            <p id="size-display" class="text-2xl font-bold text-indigo-600">0 MB</p>
+          </div>
+        </div>
+
+        <%!-- File List Container --%>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+            <h3 class="font-bold text-sm text-slate-800 uppercase tracking-tighter">Archivos Seleccionados</h3>
+            <span id="badge-count" class="bg-indigo-100 text-indigo-600 text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+          </div>
+          <div id="file-list-container" class="space-y-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+            <div class="flex flex-col items-center py-8 justify-center text-slate-300">
+              <p class="text-xs italic text-center">Ningún archivo seleccionado aún</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </main>
+</div>
+
+<script>
+  // ============================================================================
+  // DOM Element Selection
+  // ============================================================================
+  
+  // File input and preview elements
+  const fileInput = document.getElementById('file-input');
+  const fileListContainer = document.getElementById('file-list-container');
+  const countDisplay = document.getElementById('count-display');
+  const sizeDisplay = document.getElementById('size-display');
+  const badgeCount = document.getElementById('badge-count');
+  
+  // Form and mode selection elements
+  const uploadForm = document.getElementById('upload-form');
+  const benchmarkRadio = document.getElementById('mode-benchmark');
+  const parallelRadio = document.getElementById('mode-parallel');
+  const parallelConfigSection = document.getElementById('parallel-config');
+  const advancedToggleContainer = document.getElementById('advanced-toggle-container');
+  const showAdvancedCheckbox = document.getElementById('show-advanced');
+  
+  // Processing mode radio buttons
+  const processingModeRadios = document.querySelectorAll('input[name="processing_mode"]');
+
+  // ============================================================================
+  // Advanced Configuration Toggle (Parallel Mode)
+  // ============================================================================
+  
+  /**
+   * Show or hide advanced configuration toggle based on selected processing mode.
+   * The toggle checkbox is only visible when parallel mode is selected.
+   * This provides a cleaner UX by hiding power-user options by default.
+   */
+  function toggleAdvancedCheckbox() {
+    if (parallelRadio && parallelRadio.checked) {
+      // Show the advanced settings checkbox when parallel mode is active
+      advancedToggleContainer.classList.remove('hidden');
+    } else {
+      // Hide both the checkbox and the advanced config when not in parallel mode
+      advancedToggleContainer.classList.add('hidden');
+      parallelConfigSection.classList.add('hidden');
+      
+      // Reset checkbox state when switching away from parallel mode
+      if (showAdvancedCheckbox) {
+        showAdvancedCheckbox.checked = false;
+      }
+    }
+  }
+
+  /**
+   * Toggle visibility of advanced configuration panel.
+   * Only shows when both conditions are met:
+   * 1. Parallel mode is selected
+   * 2. "Show Advanced" checkbox is checked
+   */
+  function toggleAdvancedConfig() {
+    if (showAdvancedCheckbox && showAdvancedCheckbox.checked && parallelRadio && parallelRadio.checked) {
+      // Show advanced configuration with smooth animation
+      parallelConfigSection.classList.remove('hidden');
+      // Add slight delay for smooth appearance
+      setTimeout(() => {
+        parallelConfigSection.classList.add('animate-fade-in');
+      }, 10);
+    } else {
+      // Hide advanced configuration
+      parallelConfigSection.classList.add('hidden');
+      parallelConfigSection.classList.remove('animate-fade-in');
+    }
+  }
+
+  // Attach event listeners to processing mode radio buttons
+  if (processingModeRadios) {
+    processingModeRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        toggleAdvancedCheckbox();
+        toggleAdvancedConfig();
+      });
+    });
+  }
+
+  // Attach event listener to advanced settings checkbox
+  if (showAdvancedCheckbox) {
+    showAdvancedCheckbox.addEventListener('change', toggleAdvancedConfig);
+  }
+
+  // Initialize visibility on page load
+  toggleAdvancedCheckbox();
+  toggleAdvancedConfig();
+
+  // ============================================================================
+  // File Selection and Preview
+  // ============================================================================
+  
+  /**
+   * Handle file input change event.
+   * Updates the preview panel with selected files and their total size.
+   */
+  if (fileInput) {
+    fileInput.addEventListener('change', function(event) {
+      const selectedFiles = event.target.files;
+      if (selectedFiles.length > 0) {
+        let accumulatedSize = 0;
+        let listHtml = "";
+        Array.from(selectedFiles).forEach(currentFile => {
+          accumulatedSize += currentFile.size;
+          const fileSizeInKB = (currentFile.size / 1024).toFixed(1);
+          listHtml += `
+            <div class="flex items-center justify-between gap-2 text-sm text-slate-600 py-2 px-3 bg-slate-50 rounded-lg border border-white shadow-sm">
+              <div class="flex items-center gap-2 overflow-hidden">
+                <span class="text-indigo-400 text-lg">📄</span>
+                <span class="truncate font-medium">${currentFile.name}</span>
+              </div>
+              <span class="text-[10px] font-mono bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-400">${fileSizeInKB} KB</span>
+            </div>
+          `;
+        });
+        
+        // Update preview panel with aggregated information
+        fileListContainer.innerHTML = listHtml;
+        countDisplay.innerText = selectedFiles.length;
+        badgeCount.innerText = selectedFiles.length;
+        const sizeInMB = (accumulatedSize / (1024 * 1024)).toFixed(2);
+        sizeDisplay.innerText = `${sizeInMB} MB`;
+      }
+    });
+  }
+
+  // ============================================================================
+  // Dynamic Form Routing
+  // ============================================================================
+  
+  /**
+   * Handle form submission routing.
+   * Changes the form action URL based on selected processing mode:
+   * - Benchmark mode -> /benchmark
+   * - Other modes -> /upload
+   */
+  if (uploadForm) {
+    uploadForm.addEventListener('submit', function(event) {
+      if (benchmarkRadio && benchmarkRadio.checked) {
+        uploadForm.action = "/benchmark";
+      } else {
+        uploadForm.action = "/upload";
+      }
+    });
+  }
+
+  // ============================================================================
+  // File Type Validation
+  // ============================================================================
+  
+  /**
+   * Validate file extensions on selection.
+   * Prevents invalid file types and folder navigation issues on Linux.
+   * Only CSV, JSON, XML, and LOG files are accepted.
+   */
+  document.getElementById('file-input').addEventListener('change', function(e) {
+    const allowedExtensions = /(\.csv|\.json|\.xml|\.log)$/i;
+    const files = Array.from(e.target.files);
+    
+    const invalidFiles = files.filter(file => !allowedExtensions.exec(file.name));
+
+    if (invalidFiles.length > 0) {
+      const fileNames = invalidFiles.map(f => f.name).join(", ");
+      alert("Formatos no soportados: " + fileNames + "\nSolo se permiten CSV, JSON, XML y LOG.");
+      e.target.value = ''; // Clear selection
+    }
+  });
+
+  // ============================================================================
+  // Form Submission Validation
+  // ============================================================================
+  
+  /**
+   * Validate form submission.
+   * Ensures at least one file is selected before submitting.
+   */
+  document.getElementById('upload-form').addEventListener('submit', function(e) {
+    const fileInput = document.getElementById('file-input');
+    
+    if (!fileInput.files || fileInput.files.length === 0) {
+      e.preventDefault();
+      alert("Primero tienes que seleccionar al menos 1 archivo.");
+    }
+  });
+</script>

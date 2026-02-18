@@ -2,9 +2,9 @@
                       REPORTE DE PROCESAMIENTO DE ARCHIVOS
 ================================================================================
 
-Fecha de generación: 2026-02-08 22:41:38
-Directorio procesado: data/valid
-Modo de procesamiento: Sequential
+Fecha de generación: 2026-02-18 21:41:22
+Directorio procesado: /tmp
+Modo de procesamiento: Benchmark
 
 --------------------------------------------------------------------------------
 RESUMEN EJECUTIVO
@@ -22,7 +22,7 @@ Tasa de éxito: 100.0%
 --------------------------------------------------------------------------------
 MÉTRICAS DE ARCHIVOS CSV
 --------------------------------------------------------------------------------
-[Archivo: ventas_enero.csv]
+[Archivo: 1771450882481_5_ventas_enero.csv]
   * Total de ventas: $24,399.93
   * Productos únicos: 15
   * Producto más vendido: Cable HDMI (40 unidades)
@@ -30,7 +30,7 @@ MÉTRICAS DE ARCHIVOS CSV
   * Promedio de descuento aplicado: 12.0%
   * Rango de fechas procesadas: 2024-01-02 a 2024-01-30
 
-[Archivo: ventas_febrero.csv]
+[Archivo: 1771450882481_6_ventas_febrero.csv]
   * Total de ventas: $26,721.37
   * Productos únicos: 16
   * Producto más vendido: Cable Ethernet Cat6 (30 unidades)
@@ -47,7 +47,7 @@ Totales Consolidados CSV:
 --------------------------------------------------------------------------------
 MÉTRICAS DE ARCHIVOS JSON
 --------------------------------------------------------------------------------
-[Archivo: sesiones.json]
+[Archivo: 1771450882481_2_sesiones.json]
   * Total de usuarios registrados: 8
   * Usuarios activos vs inactivos: 7 activos / 1 inactivos (87.5%)
   * Promedio de duración de sesión: 30.0 minutos
@@ -60,7 +60,7 @@ MÉTRICAS DE ARCHIVOS JSON
     5. exportar_excel (2 veces)
   * Hora pico de actividad: 8:00 (2 sesiones)
 
-[Archivo: usuarios.json]
+[Archivo: 1771450882481_4_usuarios.json]
   * Total de usuarios registrados: 10
   * Usuarios activos vs inactivos: 7 activos / 3 inactivos (70.0%)
   * Promedio de duración de sesión: 26.7 minutos
@@ -82,7 +82,7 @@ Totales Consolidados JSON:
 --------------------------------------------------------------------------------
 MÉTRICAS DE ARCHIVOS LOG
 --------------------------------------------------------------------------------
-[Archivo: aplicacion.log]
+[Archivo: 1771450882481_0_aplicacion.log]
   * Total de entradas: 71
   * Distribución de logs por nivel:
     - DEBUG: 10 (14.1%)
@@ -101,7 +101,7 @@ MÉTRICAS DE ARCHIVOS LOG
     4. UI (2 errores)
   * Errores críticos (ERROR + FATAL): 8
 
-[Archivo: sistema.log]
+[Archivo: 1771450882481_3_sistema.log]
   * Total de entradas: 72
   * Distribución de logs por nivel:
     - DEBUG: 6 (8.3%)
@@ -129,7 +129,7 @@ Totales Consolidados LOG:
 --------------------------------------------------------------------------------
 MÉTRICAS DE ARCHIVOS XML
 --------------------------------------------------------------------------------
-[Archivo: productos.xml]
+[Archivo: 1771450882481_1_productos.xml]
   * Total de productos: 5
   * Valor total de inventario: $44,948.40
   * Categorías: 4
@@ -140,9 +140,16 @@ MÉTRICAS DE ARCHIVOS XML
 --------------------------------------------------------------------------------
 ANÁLISIS DE RENDIMIENTO
 --------------------------------------------------------------------------------
+Comparación Secuencial vs Paralelo:
+  * Tiempo secuencial: 0.03 segundos
+  * Tiempo paralelo: 0.0 segundos
+  * Factor de mejora: 10.0x veces más rápido
+  * Procesos utilizados: 7
+  * Memoria máxima: 67.74 MB
+
 Tiempo total: 3ms (0.0s)
 Promedio por archivo: 0.43ms
-Modo utilizado: Sequential
+Modo utilizado: Benchmark
 Archivos procesados: 7
 
 --------------------------------------------------------------------------------
