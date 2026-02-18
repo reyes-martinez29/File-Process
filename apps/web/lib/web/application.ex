@@ -7,15 +7,12 @@ defmodule Web.Application do
 
   @impl true
   def start(_type, _args) do
-    # Create ETS table for storing reports (avoids cookie overflow)
-    :ets.new(:reports_store, [:set, :public, :named_table])
-
     children = [
       WebWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:web, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Web.PubSub},
-      # Start a worker by calling: Web.Worker.start_link(arg)
-      # {Web.Worker, arg},
+      # Report store with automatic cleanup (prevents memory leaks)
+      Web.ReportStore,
       # Start to serve requests, typically the last entry
       WebWeb.Endpoint
     ]

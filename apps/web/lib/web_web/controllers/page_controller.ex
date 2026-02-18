@@ -1,6 +1,12 @@
 defmodule WebWeb.PageController do
   use WebWeb, :controller
 
+  # File size limits (security/DoS prevention)
+  @max_file_size_mb 50
+  @max_total_size_mb 100
+  @max_file_size_bytes @max_file_size_mb * 1024 * 1024
+  @max_total_size_bytes @max_total_size_mb * 1024 * 1024
+
   def home(conn, _params) do
     # Render home page with optional report data from assigns
     render(conn, :home, report: nil)
@@ -47,6 +53,31 @@ defmodule WebWeb.PageController do
 
   def upload(conn, %{"archivos" => archivos, "processing_mode" => mode} = params)
       when is_list(archivos) do
+    # Security: Validate file sizes before processing (prevents DoS/OOM)
+    case validate_file_sizes(archivos) do
+      :ok ->
+        process_upload(conn, archivos, mode, params)
+
+      {:error, reason} ->
+        conn
+        |> put_flash(:error, reason)
+        |> render(:home, report: nil)
+    end
+  end
+
+  # Fallback when no processing mode is specified (defaults to parallel)
+  def upload(conn, %{"archivos" => archivos}) when is_list(archivos) do
+    upload(conn, %{"archivos" => archivos, "processing_mode" => "parallel"})
+  end
+
+  def upload(conn, _params) do
+    conn
+    |> put_flash(:error, "No files received")
+    |> render(:home, report: nil)
+  end
+
+  # Actual processing logic (separated for cleaner validation flow)
+  defp process_upload(conn, archivos, mode, params) do
     # Process all uploaded files
     # Phoenix uploads don't preserve extensions, so we create temp files with proper names
 
@@ -70,9 +101,9 @@ defmodule WebWeb.PageController do
     # Step 5: Store report in ETS and save only ID in session (avoids cookie overflow)
     case resultado do
       {:ok, reporte} ->
-        # Generate unique ID and store report in ETS
+        # Generate unique ID and store report in ETS with automatic cleanup
         report_id = generate_report_id()
-        :ets.insert(:reports_store, {report_id, reporte, System.system_time(:second)})
+        Web.ReportStore.put(report_id, reporte)
 
         conn
         |> put_session(:report_id, report_id)
@@ -86,17 +117,6 @@ defmodule WebWeb.PageController do
     end
   end
 
-  # Fallback when no processing mode is specified (defaults to parallel)
-  def upload(conn, %{"archivos" => archivos}) when is_list(archivos) do
-    upload(conn, %{"archivos" => archivos, "processing_mode" => "parallel"})
-  end
-
-  def upload(conn, _params) do
-    conn
-    |> put_flash(:error, "No files received")
-    |> render(:home, report: nil)
-  end
-
   def results(conn, _params) do
     # Get report ID from session and retrieve report from ETS
     case get_session(conn, :report_id) do
@@ -106,11 +126,11 @@ defmodule WebWeb.PageController do
         |> redirect(to: ~p"/")
 
       report_id ->
-        case :ets.lookup(:reports_store, report_id) do
-          [{^report_id, report, _timestamp}] ->
+        case Web.ReportStore.get(report_id) do
+          {:ok, report} ->
             render(conn, :results, report: report)
 
-          [] ->
+          :error ->
             conn
             |> put_flash(:error, "Report expired or not found. Please process files again.")
             |> redirect(to: ~p"/")
@@ -127,11 +147,11 @@ defmodule WebWeb.PageController do
         |> redirect(to: ~p"/")
 
       report_id ->
-        case :ets.lookup(:reports_store, report_id) do
-          [{^report_id, report, _timestamp}] ->
+        case Web.ReportStore.get(report_id) do
+          {:ok, report} ->
             render(conn, :errors, report: report)
 
-          [] ->
+          :error ->
             conn
             |> put_flash(:error, "Report expired or not found. Please process files again.")
             |> redirect(to: ~p"/")
@@ -238,6 +258,41 @@ defmodule WebWeb.PageController do
 
       :error ->
         default
+    end
+  end
+
+  # Validate file sizes to prevent DoS attacks and OOM conditions.
+  #
+  # Returns :ok if all files are within limits, or {:error, message} otherwise.
+  defp validate_file_sizes(archivos) do
+    # Get file sizes
+    file_sizes = Enum.map(archivos, fn archivo ->
+      case File.stat(archivo.path) do
+        {:ok, %{size: size}} -> {archivo.filename, size}
+        {:error, _} -> {archivo.filename, 0}
+      end
+    end)
+
+    total_size = Enum.reduce(file_sizes, 0, fn {_name, size}, acc -> acc + size end)
+
+    # Check individual file sizes
+    oversized_files =
+      Enum.filter(file_sizes, fn {_name, size} ->
+        size > @max_file_size_bytes
+      end)
+
+    cond do
+      oversized_files != [] ->
+        [{filename, size} | _] = oversized_files
+        size_mb = Float.round(size / (1024 * 1024), 2)
+        {:error, "File '#{filename}' is too large (#{size_mb} MB). Maximum file size is #{@max_file_size_mb} MB."}
+
+      total_size > @max_total_size_bytes ->
+        total_mb = Float.round(total_size / (1024 * 1024), 2)
+        {:error, "Total upload size (#{total_mb} MB) exceeds maximum allowed (#{@max_total_size_mb} MB). Please upload fewer or smaller files."}
+
+      true ->
+        :ok
     end
   end
 

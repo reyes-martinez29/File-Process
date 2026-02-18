@@ -129,6 +129,27 @@ defmodule WebWeb.PageControllerTest do
 
       if File.exists?(temp_path), do: File.rm(temp_path)
     end
+
+    test "POST /upload rejects file exceeding size limit", %{conn: conn} do
+      # Create a large file (simulate 51MB file)
+      large_content = String.duplicate("x", 51 * 1024 * 1024)
+      temp_path = write_temp_file("large_file.csv", large_content)
+
+      upload = %Plug.Upload{
+        path: temp_path,
+        filename: "large_file.csv",
+        content_type: "text/csv"
+      }
+
+      conn = post(conn, ~p"/upload", %{
+        "archivos" => [upload],
+        "processing_mode" => "sequential"
+      })
+
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "too large"
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "50 MB"
+      if File.exists?(temp_path), do: File.rm(temp_path)
+    end
   end
 
   # ============================================================================
