@@ -6,57 +6,32 @@ defmodule WebWeb.PageController do
     render(conn, :home, report: nil)
   end
 
-# lib/web_web/controllers/page_controller.ex
+def benchmark_results(conn, %{"archivos" => archivos}) when is_list(archivos) do
+  # PHASE 1: PRE-PROCESSING (Outside timing window)
+  # We prepare all files before starting the benchmark to ensure web-specific
+  # overhead (like file copying) doesn't pollute the performance metrics.
+  classified_files = Enum.map(archivos, fn archivo ->
+    # Define a temporary path in the system's temp directory
+    temp_path = Path.join(System.tmp_dir!(), archivo.filename)
 
-def benchmark_results(conn, params) do
-  # We extract "archivos" safely. If it doesn't exist, we default to an empty list.
-  archivos = Map.get(params, "archivos", [])
-  allowed_extensions = ~w(.csv .json .xml .log)
+    # Synchronously copy the uploaded file to the temp location
+    File.cp!(archivo.path, temp_path)
 
-  # PHASE 1: PRE-PROCESSING & VALIDATION
-  # We filter and prepare files only if they match the supported extensions.
-  classified_files =
-    archivos
-    |> Enum.filter(fn archivo ->
-      # Safety check: skip files that are not supported to avoid engine crashes
-      ext = archivo.filename |> Path.extname() |> String.downcase()
-      ext in allowed_extensions
-    end)
-    |> Enum.map(fn archivo ->
-      # Create a temporary path for the file
-      temp_path = Path.join(System.tmp_dir!(), archivo.filename)
-      File.cp!(archivo.path, temp_path)
+    # Manual type detection based on extension to match the core engine's expectations
+    extension = archivo.filename
+                |> Path.extname()
+                |> String.downcase()
+                |> String.replace(".", "")
 
-      # Map the extension to the atom type required by the processing engine
-      extension = archivo.filename |> Path.extname() |> String.downcase() |> String.replace(".", "")
-      type = case extension do
-        "csv"  -> :csv
-        "json" -> :json
-        "xml"  -> :xml
-        _      -> :txt
-      end
-      {type, temp_path}
-    end)
+    type = case extension do
+      "csv" -> :csv
+      "json" -> :json
+      "xml" -> :xml
+      _ -> :txt
+    end
 
-  # FINAL CHECK: Execute benchmark only if we have valid files
-  case classified_files do
-    [] ->
-      conn
-      |> put_flash(:error, "No valid files selected. Please upload CSV, JSON, XML, or LOG.")
-      |> redirect(to: ~p"/")
-
-    files_to_process ->
-      # PHASE 2: EXECUTION
-      # Running the benchmark with prepared files to ensure timing accuracy
-      {_results, benchmark_data} = FProcess.Modes.Benchmark.run(files_to_process, %{show_progress: false})
-
-      # PHASE 3: CLEANUP
-      # Remove temporary files after processing is complete
-      Enum.each(files_to_process, fn {_, path} -> File.rm(path) end)
-
-      render(conn, :benchmark, data: benchmark_data)
-end
-
+    {type, temp_path}
+  end)
 
   # PHASE 2: EXECUTION (Clean call)
   # Invoking the Benchmark mode directly. At this point, files are already
