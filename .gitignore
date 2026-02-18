@@ -34,3 +34,18 @@ test_upload.exs
 test_multiple_upload.exs
 test_modes.exs
 test_upload_now.exs
+
+
+# Umbrella apps build folders
+apps/*/_build/
+
+# Mix artifacts
+.mix/
+.elixir_ls/
+
+# Output files
+output/
+apps/core/output/
+
+# BEAM files (extra security measure to prevent accidentally committing compiled files)
+*.beam
