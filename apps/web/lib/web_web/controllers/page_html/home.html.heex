@@ -232,6 +232,14 @@
       alert("Formatos no soportados: " + fileNames + "\nSolo se permiten CSV, JSON, XML y LOG.");
       e.target.value = ''; // Clear selection if invalid
     }
-    // Auto-submit was removed to let the user choose the Processing Mode
   });
+  document.getElementById('upload-form').addEventListener('submit', function(e) {
+  const fileInput = document.getElementById('file-input');
+  
+  if (!fileInput.files || fileInput.files.length === 0) {
+  
+    e.preventDefault(); 
+    alert("Primero tienes que seleccionar al menos 1 archivo.");
+  }
+});
 </script>
