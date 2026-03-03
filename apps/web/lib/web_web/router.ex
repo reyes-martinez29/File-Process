@@ -18,11 +18,15 @@ defmodule WebWeb.Router do
   scope "/", WebWeb do
     pipe_through :browser
 
+    # Rutas tradicionales (mantener)
     get "/", PageController, :home
     post "/upload", PageController, :upload
     get "/results", PageController, :results
     get "/errors", PageController, :errors
     post "/benchmark", PageController, :benchmark_results
+
+    # Nueva ruta LiveView
+    live "/live/results", ResultsLive, :index
   end
 
   # Other scopes may use custom stacks.

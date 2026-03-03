@@ -1,0 +1,66 @@
+<div class="min-h-screen bg-slate-50">
+  <div class="max-w-7xl mx-auto p-8">
+    <%!-- Header --%>
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-bold text-slate-800">Resultados del Procesamiento</h1>
+      <.link navigate={~p"/"} class="text-indigo-600 hover:text-indigo-800 font-medium">
+        ← Volver
+      </.link>
+    </div>
+
+    <%!-- Resumen --%>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <p class="text-3xl font-bold text-slate-800"><%= @report.total_files %></p>
+        <p class="text-sm text-slate-500 mt-1">Total archivos</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-green-200">
+        <p class="text-3xl font-bold text-green-600"><%= @report.success_count %></p>
+        <p class="text-sm text-slate-500 mt-1">Exitosos</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-red-200">
+        <p class="text-3xl font-bold text-red-600"><%= @report.error_count %></p>
+        <p class="text-sm text-slate-500 mt-1">Errores</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-indigo-200">
+        <p class="text-3xl font-bold text-indigo-600">
+          <%= format_duration(@report.total_duration_ms) %>
+        </p>
+        <p class="text-sm text-slate-500 mt-1">Duración</p>
+      </div>
+    </div>
+
+    <%!-- Lista simple de resultados --%>
+    <div class="space-y-4">
+      <%= for result <- @report.results do %>
+        <div class={[
+          "bg-white p-6 rounded-xl shadow-sm border-l-4",
+          result.status == :ok && "border-green-500",
+          result.status == :error && "border-red-500",
+          result.status == :partial && "border-yellow-500"
+        ]}>
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="font-bold text-lg text-slate-800"><%= result.filename %></h3>
+              <p class="text-sm text-slate-500">
+                Tipo: <%= result.type %> | Duración: <%= format_duration(result.duration_ms) %>
+              </p>
+            </div>
+
+            <span class={[
+              "px-3 py-1 rounded-full text-sm font-semibold",
+              result.status == :ok && "bg-green-100 text-green-800",
+              result.status == :error && "bg-red-100 text-red-800",
+              result.status == :partial && "bg-yellow-100 text-yellow-800"
+            ]}>
+              <%= result.status %>
+            </span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

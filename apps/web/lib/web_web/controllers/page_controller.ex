@@ -139,7 +139,7 @@ defmodule WebWeb.PageController do
         conn
         |> put_session(:report_id, report_id)
         |> put_flash(:info, build_success_message(reporte, length(archivos)))
-        |> render(:results, report: reporte)
+        |> redirect(to: ~p"/live/results?id=#{report_id}")
 
       {:error, razon} ->
         # Log error with context
