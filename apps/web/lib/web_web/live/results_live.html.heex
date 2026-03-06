@@ -33,6 +33,29 @@
       </div>
     </div>
 
+    <%!-- Error Alert (if any) --%>
+    <%= if @report.error_count > 0 do %>
+      <div class="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">⚠️</span>
+            <div>
+              <p class="font-semibold text-red-900">
+                <%= @report.error_count %> file(s) had processing errors
+              </p>
+              <p class="text-sm text-red-700">Review detailed error information</p>
+            </div>
+          </div>
+          <.link
+            navigate={~p"/live/errors?id=#{@report_id}"}
+            class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
+          >
+            View errors →
+          </.link>
+        </div>
+      </div>
+    <% end %>
+
     <%!-- Lista simple de resultados --%>
     <div class="space-y-4">
       <%= for result <- @report.results do %>

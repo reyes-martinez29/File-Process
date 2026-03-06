@@ -1,0 +1,164 @@
+<div class="min-h-screen bg-slate-50">
+  <div class="max-w-7xl mx-auto p-8">
+    <%!-- Header --%>
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-800">Processing Errors</h1>
+        <p class="text-slate-600 mt-2">
+          Files with errors or partial processing issues
+        </p>
+      </div>
+      <.link
+        navigate={~p"/live/results?id=#{@report_id}"}
+        class="text-indigo-600 hover:text-indigo-800 font-medium"
+      >
+        ← Back to all results
+      </.link>
+    </div>
+
+    <%!-- Error Summary --%>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-red-200">
+        <p class="text-3xl font-bold text-red-600"><%= @total_errors %></p>
+        <p class="text-sm text-slate-500 mt-1">Files with issues</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-orange-200">
+        <p class="text-3xl font-bold text-orange-600">
+          <%= Enum.count(@errors, &(&1.status == :error)) %>
+        </p>
+        <p class="text-sm text-slate-500 mt-1">Complete errors</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-yellow-200">
+        <p class="text-3xl font-bold text-yellow-600">
+          <%= Enum.count(@errors, &(&1.status == :partial)) %>
+        </p>
+        <p class="text-sm text-slate-500 mt-1">Partial processing</p>
+      </div>
+    </div>
+
+    <%!-- Success Message if no errors --%>
+    <%= if @total_errors == 0 do %>
+      <div class="bg-green-50 border border-green-200 rounded-xl p-8 text-center">
+        <span class="text-6xl">✅</span>
+        <h2 class="text-2xl font-bold text-green-900 mt-4">
+          All files processed successfully!
+        </h2>
+        <p class="text-green-700 mt-2">No errors found in this processing batch.</p>
+        <.link
+          navigate={~p"/live/results?id=#{@report_id}"}
+          class="mt-6 inline-block px-6 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors"
+        >
+          View all results
+        </.link>
+      </div>
+    <% else %>
+      <%!-- Alert Banner --%>
+      <div class="bg-red-50 border border-red-200 rounded-xl p-6 mb-6">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">⚠️</span>
+          <div>
+            <p class="font-semibold text-red-900">
+              <%= @total_errors %> file(s) encountered problems during processing
+            </p>
+            <p class="text-sm text-red-700">
+              Review details below to identify and fix issues in source files.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <%!-- Error List --%>
+      <div class="space-y-4">
+        <%= for error <- @errors do %>
+          <div class={[
+            "bg-white p-6 rounded-xl shadow-sm border-l-4",
+            error.status == :error && "border-red-500",
+            error.status == :partial && "border-yellow-500"
+          ]}>
+            <%!-- Error Header --%>
+            <div class="flex justify-between items-start mb-4">
+              <div class="flex items-start gap-3">
+                <%!-- File Icon --%>
+                <span class="text-3xl">
+                  <%= case error.type do %>
+                    <% :csv -> %> 📊
+                    <% :json -> %> 📋
+                    <% :xml -> %> 📄
+                    <% :log -> %> 📝
+                    <% _ -> %> 📁
+                  <% end %>
+                </span>
+
+                <div>
+                  <h3 class="font-bold text-lg text-slate-800"><%= error.filename %></h3>
+                  <p class="text-sm text-slate-500">
+                    Type: <%= error.type %> | Duration: <%= format_duration(error.duration_ms) %>
+                  </p>
+                </div>
+              </div>
+
+              <%!-- Status Badge --%>
+              <span class={[
+                "px-3 py-1 rounded-full text-sm font-semibold",
+                error.status == :error && "bg-red-100 text-red-800",
+                error.status == :partial && "bg-yellow-100 text-yellow-800"
+              ]}>
+                <%= if error.status == :error do %>
+                  ✗ Complete Error
+                <% else %>
+                  ⚠ Partial Processing
+                <% end %>
+              </span>
+            </div>
+
+            <%!-- Error Details --%>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <h4 class="font-semibold text-red-800 mb-3">
+                <%= if error.status == :error do %>
+                  ❌ Error Details
+                <% else %>
+                  ⚠️ Warnings
+                <% end %>
+              </h4>
+
+              <%= if error.errors != [] do %>
+                <ul class="space-y-2">
+                  <%= for err <- error.errors do %>
+                    <li class="text-sm text-red-700 flex items-start gap-2">
+                      <span class="mt-1">•</span>
+                      <span class="flex-1 font-mono"><%= format_error(err) %></span>
+                    </li>
+                  <% end %>
+                </ul>
+              <% else %>
+                <p class="text-sm text-red-700">No specific error details provided.</p>
+              <% end %>
+            </div>
+
+            <%!-- Partial Metrics (if available) --%>
+            <%= if error.metrics != %{} do %>
+              <div class="bg-slate-50 rounded-lg p-4 mt-4">
+                <h4 class="font-semibold text-slate-700 mb-3">
+                  📊 Data processed before error
+                </h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <%= for {key, value} <- error.metrics do %>
+                    <div>
+                      <span class="text-sm text-slate-500">
+                        <%= key |> Atom.to_string() |> String.replace("_", " ") |> String.capitalize() %>
+                        :
+                      </span>
+                      <span class="font-semibold ml-2 text-slate-800"><%= value %></span>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

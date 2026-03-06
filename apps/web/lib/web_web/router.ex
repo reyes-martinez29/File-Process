@@ -25,8 +25,9 @@ defmodule WebWeb.Router do
     get "/errors", PageController, :errors
     post "/benchmark", PageController, :benchmark_results
 
-    # Nueva ruta LiveView
+    # LiveView routes
     live "/live/results", ResultsLive, :index
+    live "/live/errors", ErrorsLive, :index
   end
 
   # Other scopes may use custom stacks.
