@@ -30,8 +30,4 @@ defmodule WebWeb.ResultsLive do
          |> push_navigate(to: ~p"/")}
     end
   end
-
-  # Helper para formatear duración
-  defp format_duration(ms) when ms < 1000, do: "#{ms}ms"
-  defp format_duration(ms), do: "#{Float.round(ms / 1000, 2)}s"
 end
