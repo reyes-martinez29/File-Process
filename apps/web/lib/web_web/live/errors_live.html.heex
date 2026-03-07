@@ -81,14 +81,9 @@
             <div class="flex justify-between items-start mb-4">
               <div class="flex items-start gap-3">
                 <%!-- File Icon --%>
+                <% type_config = file_type_config(error.type) %>
                 <span class="text-3xl">
-                  <%= case error.type do %>
-                    <% :csv -> %> 📊
-                    <% :json -> %> 📋
-                    <% :xml -> %> 📄
-                    <% :log -> %> 📝
-                    <% _ -> %> 📁
-                  <% end %>
+                  <%= type_config.icon %>
                 </span>
 
                 <div>
@@ -100,16 +95,9 @@
               </div>
 
               <%!-- Status Badge --%>
-              <span class={[
-                "px-3 py-1 rounded-full text-sm font-semibold",
-                error.status == :error && "bg-red-100 text-red-800",
-                error.status == :partial && "bg-yellow-100 text-yellow-800"
-              ]}>
-                <%= if error.status == :error do %>
-                  ✗ Complete Error
-                <% else %>
-                  ⚠ Partial Processing
-                <% end %>
+              <% status_config = status_badge_config(error.status) %>
+              <span class="px-3 py-1 rounded-full text-sm font-semibold bg-#{status_config.color}-100 text-#{status_config.color}-800">
+                <%= status_config.icon %> <%= status_config.text %>
               </span>
             </div>
 

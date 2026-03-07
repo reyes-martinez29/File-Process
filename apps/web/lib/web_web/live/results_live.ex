@@ -30,4 +30,17 @@ defmodule WebWeb.ResultsLive do
          |> push_navigate(to: ~p"/")}
     end
   end
+
+  # Helper functions for formatting and display
+
+  defp status_badge_config(:ok), do: %{color: "emerald", icon: "✓", text: "Success"}
+  defp status_badge_config(:error), do: %{color: "rose", icon: "✕", text: "Error"}
+  defp status_badge_config(:partial), do: %{color: "amber", icon: "⚠", text: "Partial"}
+  defp status_badge_config(_), do: %{color: "slate", icon: "?", text: "Unknown"}
+
+  defp file_type_config(:csv), do: %{color: "indigo", icon: "📊", label: "CSV"}
+  defp file_type_config(:json), do: %{color: "amber", icon: "📄", label: "JSON"}
+  defp file_type_config(:xml), do: %{color: "green", icon: "📝", label: "XML"}
+  defp file_type_config(:log), do: %{color: "purple", icon: "📋", label: "LOG"}
+  defp file_type_config(_), do: %{color: "slate", icon: "❓", label: "UNKNOWN"}
 end

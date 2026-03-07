@@ -93,47 +93,34 @@
       <p class="text-slate-500 mb-8 text-sm">Key metrics from current processing</p>
 
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div class="bg-slate-50 border border-slate-100 p-6 rounded-2xl relative overflow-hidden group">
-          <div class="absolute -right-2 -bottom-2 text-6xl opacity-5 group-hover:scale-110 transition-transform">
-            📂
-          </div>
-          <p class="text-3xl font-black text-slate-800"><%= @report.total_files %></p>
-          <p class="text-xs text-slate-400 font-bold uppercase tracking-tighter">Files</p>
-        </div>
+        <.summary_card icon="📂" value={@report.total_files} label="Files" />
 
-        <div class="bg-slate-50 border border-slate-100 p-6 rounded-2xl relative overflow-hidden group">
-          <div class="absolute -right-2 -bottom-2 text-6xl opacity-5 group-hover:scale-110 transition-transform">
-            ⏱️
-          </div>
-          <p class="text-3xl font-black text-slate-800"><%= @report.total_duration_ms %>ms</p>
-          <p class="text-xs text-slate-400 font-bold uppercase tracking-tighter">Total Time</p>
-        </div>
+        <.summary_card
+          icon="⏱️"
+          value={"#{@report.total_duration_ms}ms"}
+          label="Total Time"
+        />
 
-        <div class="bg-slate-50 border border-slate-100 p-6 rounded-2xl relative overflow-hidden group">
-          <div class="absolute -right-2 -bottom-2 text-6xl opacity-5 group-hover:scale-110 transition-transform">
-            ⚡
-          </div>
-          <p class="text-3xl font-black text-slate-800">
-            <%= if @report.total_files > 0,
-              do: Float.round(@report.total_duration_ms / @report.total_files, 2),
-              else: 0 %>ms
-          </p>
-          <p class="text-xs text-slate-400 font-bold uppercase tracking-tighter">Average</p>
-        </div>
+        <.summary_card
+          icon="⚡"
+          value={
+            if @report.total_files > 0,
+              do: "#{Float.round(@report.total_duration_ms / @report.total_files, 2)}ms",
+              else: "0ms"
+          }
+          label="Average"
+        />
 
-        <div class="bg-emerald-50 border border-emerald-100 p-6 rounded-2xl relative overflow-hidden group">
-          <div class="absolute -right-2 -bottom-2 text-6xl opacity-10 group-hover:scale-110 transition-transform">
-            ✅
-          </div>
-          <p class="text-3xl font-black text-emerald-600">
-            <%= if @report.total_files > 0,
-              do: trunc(@report.success_count / @report.total_files * 100),
-              else: 0 %>%
-          </p>
-          <p class="text-xs text-emerald-500 font-bold uppercase tracking-tighter">
-            Success Rate
-          </p>
-        </div>
+        <.summary_card
+          icon="✅"
+          value={
+            if @report.total_files > 0,
+              do: "#{trunc(@report.success_count / @report.total_files * 100)}%",
+              else: "0%"
+          }
+          label="Success Rate"
+          variant="success"
+        />
       </div>
     </section>
 
@@ -196,9 +183,7 @@
         <%!-- CSV Files Tab --%>
         <div x-show="tab === 'csv'">
           <%= if @report.csv_count == 0 do %>
-            <div class="bg-slate-50 rounded-2xl p-8 text-center">
-              <p class="text-slate-400 text-sm">No CSV files were processed</p>
-            </div>
+            <.empty_state message="No CSV files were processed" />
           <% else %>
             <div class="space-y-4">
               <%= for result <- Enum.filter(@report.results, fn r -> r.type == :csv end) do %>
@@ -230,12 +215,7 @@
                           </p>
                         </div>
                       </div>
-                      <% status_config = case result.status do
-                        :ok -> %{color: "emerald", icon: "✓", text: "Success"}
-                        :error -> %{color: "rose", icon: "✕", text: "Error"}
-                        :partial -> %{color: "amber", icon: "⚠", text: "Partial"}
-                        _ -> %{color: "slate", icon: "?", text: "Unknown"}
-                      end %>
+                      <% status_config = status_badge_config(result.status) %>
                       <span class={"px-3 py-1 rounded-full text-xs font-bold bg-#{status_config.color}-100 text-#{status_config.color}-700"}>
                         <%= status_config.icon %> <%= status_config.text %>
                       </span>
@@ -247,39 +227,35 @@
                     <div class="p-6">
                       <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <%= if result.metrics[:total_sales] do %>
-                          <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-                            <p class="text-xs text-emerald-600 font-bold mb-1">Total Sales</p>
-                            <p class="text-2xl font-black text-emerald-700">
-                              $<%= result.metrics.total_sales %>
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Total Sales"
+                            value={"$#{result.metrics.total_sales}"}
+                            color="emerald"
+                          />
                         <% end %>
 
                         <%= if result.metrics[:unique_products] do %>
-                          <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                            <p class="text-xs text-blue-600 font-bold mb-1">Unique Products</p>
-                            <p class="text-2xl font-black text-blue-700">
-                              <%= result.metrics.unique_products %>
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Unique Products"
+                            value={result.metrics.unique_products}
+                            color="blue"
+                          />
                         <% end %>
 
                         <%= if result.metrics[:total_quantity] do %>
-                          <div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
-                            <p class="text-xs text-purple-600 font-bold mb-1">Total Quantity</p>
-                            <p class="text-2xl font-black text-purple-700">
-                              <%= result.metrics.total_quantity %>
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Total Quantity"
+                            value={result.metrics.total_quantity}
+                            color="purple"
+                          />
                         <% end %>
 
                         <%= if result.metrics[:average_discount] do %>
-                          <div class="bg-amber-50 rounded-xl p-4 border border-amber-100">
-                            <p class="text-xs text-amber-600 font-bold mb-1">Avg Discount</p>
-                            <p class="text-2xl font-black text-amber-700">
-                              <%= result.metrics.average_discount %>%
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Avg Discount"
+                            value={"#{result.metrics.average_discount}%"}
+                            color="amber"
+                          />
                         <% end %>
 
                         <%= if result.metrics[:best_selling_product] do %>
@@ -330,9 +306,7 @@
         <%!-- JSON Files Tab --%>
         <div x-show="tab === 'json'" style="display: none;" x-cloak>
           <%= if @report.json_count == 0 do %>
-            <div class="bg-slate-50 rounded-2xl p-8 text-center">
-              <p class="text-slate-400 text-sm">No JSON files were processed</p>
-            </div>
+            <.empty_state message="No JSON files were processed" />
           <% else %>
             <div class="space-y-4">
               <%= for result <- Enum.filter(@report.results, fn r -> r.type == :json end) do %>
@@ -364,12 +338,7 @@
                           </p>
                         </div>
                       </div>
-                      <% status_config = case result.status do
-                        :ok -> %{color: "emerald", icon: "✓", text: "Success"}
-                        :error -> %{color: "rose", icon: "✕", text: "Error"}
-                        :partial -> %{color: "amber", icon: "⚠", text: "Partial"}
-                        _ -> %{color: "slate", icon: "?", text: "Unknown"}
-                      end %>
+                      <% status_config = status_badge_config(result.status) %>
                       <span class={"px-3 py-1 rounded-full text-xs font-bold bg-#{status_config.color}-100 text-#{status_config.color}-700"}>
                         <%= status_config.icon %> <%= status_config.text %>
                       </span>
@@ -381,52 +350,43 @@
                     <div class="p-6">
                       <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <%= if result.metrics[:total_users] do %>
-                          <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                            <p class="text-xs text-blue-600 font-bold mb-1">Total Users</p>
-                            <p class="text-2xl font-black text-blue-700">
-                              <%= result.metrics.total_users %>
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Total Users"
+                            value={result.metrics.total_users}
+                            color="blue"
+                          />
                         <% end %>
 
                         <%= if result.metrics[:active_users] do %>
-                          <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-                            <p class="text-xs text-emerald-600 font-bold mb-1">Active Users</p>
-                            <p class="text-2xl font-black text-emerald-700">
-                              <%= result.metrics.active_users %>
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Active Users"
+                            value={result.metrics.active_users}
+                            color="emerald"
+                          />
                         <% end %>
 
                         <%= if result.metrics[:inactive_users] do %>
-                          <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                            <p class="text-xs text-slate-600 font-bold mb-1">Inactive Users</p>
-                            <p class="text-2xl font-black text-slate-700">
-                              <%= result.metrics.inactive_users %>
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Inactive Users"
+                            value={result.metrics.inactive_users}
+                            color="slate"
+                          />
                         <% end %>
 
                         <%= if result.metrics[:average_session_duration] do %>
-                          <div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
-                            <p class="text-xs text-purple-600 font-bold mb-1">
-                              Avg Session Duration
-                            </p>
-                            <p class="text-2xl font-black text-purple-700">
-                              <%= result.metrics.average_session_duration %>
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Avg Session Duration"
+                            value={result.metrics.average_session_duration}
+                            color="purple"
+                          />
                         <% end %>
 
                         <%= if result.metrics[:total_pages_visited] do %>
-                          <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
-                            <p class="text-xs text-indigo-600 font-bold mb-1">
-                              Total Pages Visited
-                            </p>
-                            <p class="text-2xl font-black text-indigo-700">
-                              <%= result.metrics.total_pages_visited %>
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Total Pages Visited"
+                            value={result.metrics.total_pages_visited}
+                            color="indigo"
+                          />
                         <% end %>
 
                         <%= if result.metrics[:peak_hour] do %>
@@ -471,9 +431,7 @@
         <%!-- XML Files Tab --%>
         <div x-show="tab === 'xml'" style="display: none;" x-cloak>
           <%= if @report.xml_count == 0 do %>
-            <div class="bg-slate-50 rounded-2xl p-8 text-center">
-              <p class="text-slate-400 text-sm">No XML files were processed</p>
-            </div>
+            <.empty_state message="No XML files were processed" />
           <% else %>
             <div class="space-y-4">
               <%= for result <- Enum.filter(@report.results, fn r -> r.type == :xml end) do %>
@@ -505,12 +463,7 @@
                           </p>
                         </div>
                       </div>
-                      <% status_config = case result.status do
-                        :ok -> %{color: "emerald", icon: "✓", text: "Success"}
-                        :error -> %{color: "rose", icon: "✕", text: "Error"}
-                        :partial -> %{color: "amber", icon: "⚠", text: "Partial"}
-                        _ -> %{color: "slate", icon: "?", text: "Unknown"}
-                      end %>
+                      <% status_config = status_badge_config(result.status) %>
                       <span class={"px-3 py-1 rounded-full text-xs font-bold bg-#{status_config.color}-100 text-#{status_config.color}-700"}>
                         <%= status_config.icon %> <%= status_config.text %>
                       </span>
@@ -522,50 +475,43 @@
                     <div class="p-6">
                       <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <%= if result.metrics[:total_products] do %>
-                          <div class="bg-green-50 rounded-xl p-4 border border-green-100">
-                            <p class="text-xs text-green-600 font-bold mb-1">Total Products</p>
-                            <p class="text-2xl font-black text-green-700">
-                              <%= result.metrics.total_products %>
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Total Products"
+                            value={result.metrics.total_products}
+                            color="green"
+                          />
                         <% end %>
 
                         <%= if result.metrics[:categories_count] do %>
-                          <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                            <p class="text-xs text-blue-600 font-bold mb-1">Categories</p>
-                            <p class="text-2xl font-black text-blue-700">
-                              <%= result.metrics.categories_count %>
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Categories"
+                            value={result.metrics.categories_count}
+                            color="blue"
+                          />
                         <% end %>
 
                         <%= if result.metrics[:low_stock_items] do %>
-                          <div class="bg-rose-50 rounded-xl p-4 border border-rose-100">
-                            <p class="text-xs text-rose-600 font-bold mb-1">Low Stock Items</p>
-                            <p class="text-2xl font-black text-rose-700">
-                              <%= result.metrics.low_stock_items %>
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Low Stock Items"
+                            value={result.metrics.low_stock_items}
+                            color="rose"
+                          />
                         <% end %>
 
                         <%= if result.metrics[:total_inventory_value] do %>
-                          <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-                            <p class="text-xs text-emerald-600 font-bold mb-1">
-                              Inventory Value
-                            </p>
-                            <p class="text-2xl font-black text-emerald-700">
-                              $<%= result.metrics.total_inventory_value %>
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Inventory Value"
+                            value={"$#{result.metrics.total_inventory_value}"}
+                            color="emerald"
+                          />
                         <% end %>
 
                         <%= if result.metrics[:average_price] do %>
-                          <div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
-                            <p class="text-xs text-purple-600 font-bold mb-1">Average Price</p>
-                            <p class="text-2xl font-black text-purple-700">
-                              $<%= result.metrics.average_price %>
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Average Price"
+                            value={"$#{result.metrics.average_price}"}
+                            color="purple"
+                          />
                         <% end %>
                       </div>
                     </div>
@@ -579,9 +525,7 @@
         <%!-- LOG Files Tab --%>
         <div x-show="tab === 'log'" style="display: none;" x-cloak>
           <%= if @report.log_count == 0 do %>
-            <div class="bg-slate-50 rounded-2xl p-8 text-center">
-              <p class="text-slate-400 text-sm">No LOG files were processed</p>
-            </div>
+            <.empty_state message="No LOG files were processed" />
           <% else %>
             <div class="space-y-4">
               <%= for result <- Enum.filter(@report.results, fn r -> r.type == :log end) do %>
@@ -613,12 +557,7 @@
                           </p>
                         </div>
                       </div>
-                      <% status_config = case result.status do
-                        :ok -> %{color: "emerald", icon: "✓", text: "Success"}
-                        :error -> %{color: "rose", icon: "✕", text: "Error"}
-                        :partial -> %{color: "amber", icon: "⚠", text: "Partial"}
-                        _ -> %{color: "slate", icon: "?", text: "Unknown"}
-                      end %>
+                      <% status_config = status_badge_config(result.status) %>
                       <span class={"px-3 py-1 rounded-full text-xs font-bold bg-#{status_config.color}-100 text-#{status_config.color}-700"}>
                         <%= status_config.icon %> <%= status_config.text %>
                       </span>
@@ -631,21 +570,19 @@
                       <%!-- Total Entries & Critical Errors --%>
                       <div class="grid grid-cols-2 gap-4">
                         <%= if result.metrics[:total_entries] do %>
-                          <div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
-                            <p class="text-xs text-purple-600 font-bold mb-1">Total Entries</p>
-                            <p class="text-2xl font-black text-purple-700">
-                              <%= result.metrics.total_entries %>
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Total Entries"
+                            value={result.metrics.total_entries}
+                            color="purple"
+                          />
                         <% end %>
 
                         <%= if result.metrics[:critical_errors_count] do %>
-                          <div class="bg-rose-50 rounded-xl p-4 border border-rose-100">
-                            <p class="text-xs text-rose-600 font-bold mb-1">Critical Errors</p>
-                            <p class="text-2xl font-black text-rose-700">
-                              <%= result.metrics.critical_errors_count %>
-                            </p>
-                          </div>
+                          <.metric_card
+                            label="Critical Errors"
+                            value={result.metrics.critical_errors_count}
+                            color="rose"
+                          />
                         <% end %>
                       </div>
 
@@ -816,13 +753,7 @@
                 <%= for result <- @report.results do %>
                   <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
                     <div class="flex items-center gap-3">
-                      <% type_config = case result.type do
-                        :csv -> %{color: "indigo", icon: "📊", label: "CSV"}
-                        :json -> %{color: "amber", icon: "📄", label: "JSON"}
-                        :xml -> %{color: "green", icon: "📝", label: "XML"}
-                        :log -> %{color: "purple", icon: "📋", label: "LOG"}
-                        _ -> %{color: "slate", icon: "❓", label: "UNKNOWN"}
-                      end %>
+                      <% type_config = file_type_config(result.type) %>
                       <span class={"bg-#{type_config.color}-100 text-#{type_config.color}-700 px-3 py-1 rounded-lg text-xs font-bold"}>
                         <%= type_config.icon %> <%= type_config.label %>
                       </span>
@@ -832,12 +763,7 @@
                       <span class="text-xs text-slate-500">
                         <%= result.lines_processed %> lines • <%= result.duration_ms %>ms
                       </span>
-                      <% status_config = case result.status do
-                        :ok -> %{color: "emerald", icon: "✓"}
-                        :error -> %{color: "rose", icon: "✕"}
-                        :partial -> %{color: "amber", icon: "⚠"}
-                        _ -> %{color: "slate", icon: "?"}
-                      end %>
+                      <% status_config = status_badge_config(result.status) %>
                       <span class={"bg-#{status_config.color}-100 text-#{status_config.color}-700 px-2 py-1 rounded-full text-xs font-bold"}>
                         <%= status_config.icon %>
                       </span>
