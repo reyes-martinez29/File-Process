@@ -28,6 +28,7 @@ defmodule WebWeb.Router do
     # LiveView routes
     live "/live/results", ResultsLive, :index
     live "/live/errors", ErrorsLive, :index
+    live "/live/benchmark", BenchmarkLive, :index
   end
 
   # Other scopes may use custom stacks.

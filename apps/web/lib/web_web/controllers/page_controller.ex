@@ -14,42 +14,28 @@ defmodule WebWeb.PageController do
   end
 
   def benchmark_results(conn, %{"archivos" => archivos}) when is_list(archivos) do
-    # Step 1: Create temporary files with UNIQUE names to avoid OS caching issues
-    # Using timestamp + random suffix ensures each benchmark run uses fresh files
+    # Step 1: Create temporary files with UNIQUE names
     timestamp = System.system_time(:millisecond)
+    benchmark_id = "bench_#{timestamp}_#{:rand.uniform(10000)}"
 
     temp_files =
       Enum.with_index(archivos, fn archivo, idx ->
-        # Create unique filename: timestamp_index_originalname
         unique_name = "#{timestamp}_#{idx}_#{archivo.filename}"
         temp_path = Path.join(System.tmp_dir!(), unique_name)
         File.cp!(archivo.path, temp_path)
-        temp_path
+
+        %{
+          "path" => temp_path,
+          "filename" => archivo.filename,
+          "content_type" => archivo.content_type
+        }
       end)
 
-    # Step 2: Build processing options for benchmark mode
-    opts = [benchmark: true, verbose: false]
+    # Step 2: Store files info in BenchmarkStore for LiveView to access
+    Web.BenchmarkStore.put(benchmark_id, temp_files)
 
-    # Step 3: Process files using FProcess.process_files with benchmark mode
-    # This is the CORRECT way - same as CLI uses
-    resultado = FProcess.process_files(temp_files, opts)
-
-    # Step 4: Clean up temporary files
-    Enum.each(temp_files, &File.rm/1)
-
-    # Step 5: Render benchmark results
-    case resultado do
-      {:ok, reporte} ->
-        # Extract benchmark_data from the execution report
-        benchmark_data = reporte.benchmark_data
-
-        render(conn, :benchmark, data: benchmark_data)
-
-      {:error, razon} ->
-        conn
-        |> put_flash(:error, "Benchmark error: #{razon}")
-        |> redirect(to: ~p"/")
-    end
+    # Step 3: Redirect to LiveView
+    redirect(conn, to: ~p"/live/benchmark?id=#{benchmark_id}")
   end
 
   def upload(conn, %{"archivos" => archivos, "processing_mode" => mode} = params)
