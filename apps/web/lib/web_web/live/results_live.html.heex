@@ -187,117 +187,81 @@
           <% else %>
             <div class="space-y-4">
               <%= for result <- Enum.filter(@report.results, fn r -> r.type == :csv end) do %>
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                  <%!-- File header --%>
-                  <div class="bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-4 border-b border-indigo-100">
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-3">
-                        <div class="bg-indigo-100 p-2 rounded-lg text-indigo-600">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                            />
-                          </svg>
-                        </div>
-                        <div>
-                          <h3 class="font-bold text-slate-800"><%= result.filename %></h3>
-                          <p class="text-xs text-slate-500">
-                            <%= result.lines_processed %> records • <%= result.duration_ms %>ms
-                          </p>
-                        </div>
-                      </div>
-                      <% status_config = status_badge_config(result.status) %>
-                      <span class={"px-3 py-1 rounded-full text-xs font-bold bg-#{status_config.color}-100 text-#{status_config.color}-700"}>
-                        <%= status_config.icon %> <%= status_config.text %>
-                      </span>
+                <.file_result_card
+                  result={result}
+                  color="indigo"
+                  icon_path="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  :let={r}
+                >
+                  <%= if r.metrics[:total_sales] do %>
+                    <.metric_card
+                      label="Total Sales"
+                      value={"$#{r.metrics.total_sales}"}
+                      color="emerald"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:unique_products] do %>
+                    <.metric_card
+                      label="Unique Products"
+                      value={r.metrics.unique_products}
+                      color="blue"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:total_quantity] do %>
+                    <.metric_card
+                      label="Total Quantity"
+                      value={r.metrics.total_quantity}
+                      color="purple"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:average_discount] do %>
+                    <.metric_card
+                      label="Avg Discount"
+                      value={"#{r.metrics.average_discount}%"}
+                      color="amber"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:best_selling_product] do %>
+                    <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100 col-span-2">
+                      <p class="text-xs text-indigo-600 font-bold mb-1">
+                        Best Selling Product
+                      </p>
+                      <p class="text-lg font-black text-indigo-700">
+                        <%= r.metrics.best_selling_product.name %>
+                      </p>
+                      <p class="text-sm text-indigo-600">
+                        <%= r.metrics.best_selling_product.quantity %> units
+                      </p>
                     </div>
-                  </div>
+                  <% end %>
 
-                  <%!-- Metrics grid --%>
-                  <%= if result.status != :error do %>
-                    <div class="p-6">
-                      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <%= if result.metrics[:total_sales] do %>
-                          <.metric_card
-                            label="Total Sales"
-                            value={"$#{result.metrics.total_sales}"}
-                            color="emerald"
-                          />
-                        <% end %>
-
-                        <%= if result.metrics[:unique_products] do %>
-                          <.metric_card
-                            label="Unique Products"
-                            value={result.metrics.unique_products}
-                            color="blue"
-                          />
-                        <% end %>
-
-                        <%= if result.metrics[:total_quantity] do %>
-                          <.metric_card
-                            label="Total Quantity"
-                            value={result.metrics.total_quantity}
-                            color="purple"
-                          />
-                        <% end %>
-
-                        <%= if result.metrics[:average_discount] do %>
-                          <.metric_card
-                            label="Avg Discount"
-                            value={"#{result.metrics.average_discount}%"}
-                            color="amber"
-                          />
-                        <% end %>
-
-                        <%= if result.metrics[:best_selling_product] do %>
-                          <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100 col-span-2">
-                            <p class="text-xs text-indigo-600 font-bold mb-1">
-                              Best Selling Product
-                            </p>
-                            <p class="text-lg font-black text-indigo-700">
-                              <%= result.metrics.best_selling_product.name %>
-                            </p>
-                            <p class="text-sm text-indigo-600">
-                              <%= result.metrics.best_selling_product.quantity %> units
-                            </p>
-                          </div>
-                        <% end %>
-
-                        <%= if result.metrics[:top_category] do %>
-                          <div class="bg-rose-50 rounded-xl p-4 border border-rose-100 col-span-2 md:col-span-3">
-                            <p class="text-xs text-rose-600 font-bold mb-1">Top Category</p>
-                            <div class="flex items-center justify-between">
-                              <p class="text-lg font-black text-rose-700">
-                                <%= result.metrics.top_category.name %>
-                              </p>
-                              <p class="text-xl font-black text-rose-700">
-                                $<%= :erlang.float_to_binary(result.metrics.top_category.revenue, decimals: 2) %>
-                              </p>
-                            </div>
-                          </div>
-                        <% end %>
-
-                        <%= if result.metrics[:date_range] do %>
-                          <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 col-span-2 md:col-span-3">
-                            <p class="text-xs text-slate-600 font-bold mb-1">Date Range</p>
-                            <p class="text-sm font-bold text-slate-700">
-                              <%= result.metrics.date_range.from %> → <%= result.metrics.date_range.to %>
-                            </p>
-                          </div>
-                        <% end %>
+                  <%= if r.metrics[:top_category] do %>
+                    <div class="bg-rose-50 rounded-xl p-4 border border-rose-100 col-span-2 md:col-span-3">
+                      <p class="text-xs text-rose-600 font-bold mb-1">Top Category</p>
+                      <div class="flex items-center justify-between">
+                        <p class="text-lg font-black text-rose-700">
+                          <%= r.metrics.top_category.name %>
+                        </p>
+                        <p class="text-xl font-black text-rose-700">
+                          $<%= :erlang.float_to_binary(r.metrics.top_category.revenue, decimals: 2) %>
+                        </p>
                       </div>
                     </div>
                   <% end %>
-                </div>
+
+                  <%= if r.metrics[:date_range] do %>
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 col-span-2 md:col-span-3">
+                      <p class="text-xs text-slate-600 font-bold mb-1">Date Range</p>
+                      <p class="text-sm font-bold text-slate-700">
+                        <%= r.metrics.date_range.from %> → <%= r.metrics.date_range.to %>
+                      </p>
+                    </div>
+                  <% end %>
+                </.file_result_card>
               <% end %>
             </div>
           <% end %>
@@ -310,119 +274,83 @@
           <% else %>
             <div class="space-y-4">
               <%= for result <- Enum.filter(@report.results, fn r -> r.type == :json end) do %>
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                  <%!-- File header --%>
-                  <div class="bg-gradient-to-r from-amber-50 to-yellow-50 px-6 py-4 border-b border-amber-100">
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-3">
-                        <div class="bg-amber-100 p-2 rounded-lg text-amber-600">
-                          <svg
-                            xmlns="http:www.w3.org/2000/svg"
-                            class="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                            />
-                          </svg>
-                        </div>
-                        <div>
-                          <h3 class="font-bold text-slate-800"><%= result.filename %></h3>
-                          <p class="text-xs text-slate-500">
-                            <%= result.lines_processed %> records • <%= result.duration_ms %>ms
-                          </p>
-                        </div>
-                      </div>
-                      <% status_config = status_badge_config(result.status) %>
-                      <span class={"px-3 py-1 rounded-full text-xs font-bold bg-#{status_config.color}-100 text-#{status_config.color}-700"}>
-                        <%= status_config.icon %> <%= status_config.text %>
-                      </span>
+                <.file_result_card
+                  result={result}
+                  color="amber"
+                  icon_path="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  :let={r}
+                >
+                  <%= if r.metrics[:total_users] do %>
+                    <.metric_card
+                      label="Total Users"
+                      value={r.metrics.total_users}
+                      color="blue"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:active_users] do %>
+                    <.metric_card
+                      label="Active Users"
+                      value={r.metrics.active_users}
+                      color="emerald"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:inactive_users] do %>
+                    <.metric_card
+                      label="Inactive Users"
+                      value={r.metrics.inactive_users}
+                      color="slate"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:average_session_duration] do %>
+                    <.metric_card
+                      label="Avg Session Duration"
+                      value={r.metrics.average_session_duration}
+                      color="purple"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:total_pages_visited] do %>
+                    <.metric_card
+                      label="Total Pages Visited"
+                      value={r.metrics.total_pages_visited}
+                      color="indigo"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:peak_hour] do %>
+                    <div class="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                      <p class="text-xs text-amber-600 font-bold mb-1">Peak Hour</p>
+                      <p class="text-2xl font-black text-amber-700">
+                        <%= r.metrics.peak_hour.hour %>:00
+                      </p>
+                      <p class="text-xs text-amber-600">
+                        <%= r.metrics.peak_hour.session_count %> sessions
+                      </p>
                     </div>
-                  </div>
+                  <% end %>
 
-                  <%!-- Metrics grid --%>
-                  <%= if result.status != :error do %>
-                    <div class="p-6">
-                      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <%= if result.metrics[:total_users] do %>
-                          <.metric_card
-                            label="Total Users"
-                            value={result.metrics.total_users}
-                            color="blue"
-                          />
-                        <% end %>
-
-                        <%= if result.metrics[:active_users] do %>
-                          <.metric_card
-                            label="Active Users"
-                            value={result.metrics.active_users}
-                            color="emerald"
-                          />
-                        <% end %>
-
-                        <%= if result.metrics[:inactive_users] do %>
-                          <.metric_card
-                            label="Inactive Users"
-                            value={result.metrics.inactive_users}
-                            color="slate"
-                          />
-                        <% end %>
-
-                        <%= if result.metrics[:average_session_duration] do %>
-                          <.metric_card
-                            label="Avg Session Duration"
-                            value={result.metrics.average_session_duration}
-                            color="purple"
-                          />
-                        <% end %>
-
-                        <%= if result.metrics[:total_pages_visited] do %>
-                          <.metric_card
-                            label="Total Pages Visited"
-                            value={result.metrics.total_pages_visited}
-                            color="indigo"
-                          />
-                        <% end %>
-
-                        <%= if result.metrics[:peak_hour] do %>
-                          <div class="bg-amber-50 rounded-xl p-4 border border-amber-100">
-                            <p class="text-xs text-amber-600 font-bold mb-1">Peak Hour</p>
-                            <p class="text-2xl font-black text-amber-700">
-                              <%= result.metrics.peak_hour.hour %>:00
-                            </p>
-                            <p class="text-xs text-amber-600">
-                              <%= result.metrics.peak_hour.session_count %> sessions
-                            </p>
-                          </div>
-                        <% end %>
-
-                        <%= if result.metrics[:top_actions] && length(result.metrics.top_actions) > 0 do %>
-                          <div class="bg-rose-50 rounded-xl p-4 border border-rose-100 col-span-2 md:col-span-3">
-                            <p class="text-xs text-rose-600 font-bold mb-2">Top Actions</p>
-                            <div class="space-y-1">
-                              <%= for {action_item, index} <- Enum.with_index(Enum.take(result.metrics.top_actions, 5), 1) do %>
-                                <div class="flex items-center justify-between text-sm">
-                                  <span class="text-slate-700">
-                                    <span class="font-bold text-rose-600"><%= index %>.</span>
-                                    <%= action_item.action %>
-                                  </span>
-                                  <span class="font-bold text-slate-600">
-                                    <%= action_item.count %> times
-                                  </span>
-                                </div>
-                              <% end %>
-                            </div>
+                  <%= if r.metrics[:top_actions] && length(r.metrics.top_actions) > 0 do %>
+                    <div class="bg-rose-50 rounded-xl p-4 border border-rose-100 col-span-2 md:col-span-3">
+                      <p class="text-xs text-rose-600 font-bold mb-2">Top Actions</p>
+                      <div class="space-y-1">
+                        <%= for {action_item, index} <- Enum.with_index(Enum.take(r.metrics.top_actions, 5), 1) do %>
+                          <div class="flex items-center justify-between text-sm">
+                            <span class="text-slate-700">
+                              <span class="font-bold text-rose-600"><%= index %>.</span>
+                              <%= action_item.action %>
+                            </span>
+                            <span class="font-bold text-slate-600">
+                              <%= action_item.count %> times
+                            </span>
                           </div>
                         <% end %>
                       </div>
                     </div>
                   <% end %>
-                </div>
+                </.file_result_card>
               <% end %>
             </div>
           <% end %>
@@ -435,88 +363,52 @@
           <% else %>
             <div class="space-y-4">
               <%= for result <- Enum.filter(@report.results, fn r -> r.type == :xml end) do %>
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                  <%!-- File header --%>
-                  <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-green-100">
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-3">
-                        <div class="bg-green-100 p-2 rounded-lg text-green-600">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                            />
-                          </svg>
-                        </div>
-                        <div>
-                          <h3 class="font-bold text-slate-800"><%= result.filename %></h3>
-                          <p class="text-xs text-slate-500">
-                            <%= result.lines_processed %> records • <%= result.duration_ms %>ms
-                          </p>
-                        </div>
-                      </div>
-                      <% status_config = status_badge_config(result.status) %>
-                      <span class={"px-3 py-1 rounded-full text-xs font-bold bg-#{status_config.color}-100 text-#{status_config.color}-700"}>
-                        <%= status_config.icon %> <%= status_config.text %>
-                      </span>
-                    </div>
-                  </div>
-
-                  <%!-- Metrics grid --%>
-                  <%= if result.status != :error do %>
-                    <div class="p-6">
-                      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <%= if result.metrics[:total_products] do %>
-                          <.metric_card
-                            label="Total Products"
-                            value={result.metrics.total_products}
-                            color="green"
-                          />
-                        <% end %>
-
-                        <%= if result.metrics[:categories_count] do %>
-                          <.metric_card
-                            label="Categories"
-                            value={result.metrics.categories_count}
-                            color="blue"
-                          />
-                        <% end %>
-
-                        <%= if result.metrics[:low_stock_items] do %>
-                          <.metric_card
-                            label="Low Stock Items"
-                            value={result.metrics.low_stock_items}
-                            color="rose"
-                          />
-                        <% end %>
-
-                        <%= if result.metrics[:total_inventory_value] do %>
-                          <.metric_card
-                            label="Inventory Value"
-                            value={"$#{result.metrics.total_inventory_value}"}
-                            color="emerald"
-                          />
-                        <% end %>
-
-                        <%= if result.metrics[:average_price] do %>
-                          <.metric_card
-                            label="Average Price"
-                            value={"$#{result.metrics.average_price}"}
-                            color="purple"
-                          />
-                        <% end %>
-                      </div>
-                    </div>
+                <.file_result_card
+                  result={result}
+                  color="green"
+                  icon_path="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                  :let={r}
+                >
+                  <%= if r.metrics[:total_products] do %>
+                    <.metric_card
+                      label="Total Products"
+                      value={r.metrics.total_products}
+                      color="green"
+                    />
                   <% end %>
-                </div>
+
+                  <%= if r.metrics[:categories_count] do %>
+                    <.metric_card
+                      label="Categories"
+                      value={r.metrics.categories_count}
+                      color="blue"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:low_stock_items] do %>
+                    <.metric_card
+                      label="Low Stock Items"
+                      value={r.metrics.low_stock_items}
+                      color="rose"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:total_inventory_value] do %>
+                    <.metric_card
+                      label="Inventory Value"
+                      value={"$#{r.metrics.total_inventory_value}"}
+                      color="emerald"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:average_price] do %>
+                    <.metric_card
+                      label="Average Price"
+                      value={"$#{r.metrics.average_price}"}
+                      color="purple"
+                    />
+                  <% end %>
+                </.file_result_card>
               <% end %>
             </div>
           <% end %>
@@ -529,161 +421,130 @@
           <% else %>
             <div class="space-y-4">
               <%= for result <- Enum.filter(@report.results, fn r -> r.type == :log end) do %>
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                  <%!-- File header --%>
-                  <div class="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b border-purple-100">
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-3">
-                        <div class="bg-purple-100 p-2 rounded-lg text-purple-600">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                            />
-                          </svg>
-                        </div>
-                        <div>
-                          <h3 class="font-bold text-slate-800"><%= result.filename %></h3>
-                          <p class="text-xs text-slate-500">
-                            <%= result.lines_processed %> records • <%= result.duration_ms %>ms
-                          </p>
-                        </div>
-                      </div>
-                      <% status_config = status_badge_config(result.status) %>
-                      <span class={"px-3 py-1 rounded-full text-xs font-bold bg-#{status_config.color}-100 text-#{status_config.color}-700"}>
-                        <%= status_config.icon %> <%= status_config.text %>
-                      </span>
+                <.file_result_card
+                  result={result}
+                  color="purple"
+                  icon_path="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  grid_layout={false}
+                  :let={r}
+                >
+                  <div class="space-y-4">
+                    <%!-- Total Entries & Critical Errors --%>
+                    <div class="grid grid-cols-2 gap-4">
+                      <%= if r.metrics[:total_entries] do %>
+                        <.metric_card
+                          label="Total Entries"
+                          value={r.metrics.total_entries}
+                          color="purple"
+                        />
+                      <% end %>
+
+                      <%= if r.metrics[:critical_errors_count] do %>
+                        <.metric_card
+                          label="Critical Errors"
+                          value={r.metrics.critical_errors_count}
+                          color="rose"
+                        />
+                      <% end %>
                     </div>
-                  </div>
 
-                  <%!-- Metrics --%>
-                  <%= if result.status != :error do %>
-                    <div class="p-6 space-y-4">
-                      <%!-- Total Entries & Critical Errors --%>
-                      <div class="grid grid-cols-2 gap-4">
-                        <%= if result.metrics[:total_entries] do %>
-                          <.metric_card
-                            label="Total Entries"
-                            value={result.metrics.total_entries}
-                            color="purple"
-                          />
-                        <% end %>
-
-                        <%= if result.metrics[:critical_errors_count] do %>
-                          <.metric_card
-                            label="Critical Errors"
-                            value={result.metrics.critical_errors_count}
-                            color="rose"
-                          />
-                        <% end %>
+                    <%!-- Distribution by Level --%>
+                    <%= if r.metrics[:level_distribution] do %>
+                      <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                        <p class="text-xs text-slate-600 font-bold mb-3">
+                          Distribution by Level
+                        </p>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          <%= for {level, data} <- r.metrics.level_distribution do %>
+                            <%= case level do %>
+                              <% "DEBUG" -> %>
+                                <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
+                                  <p class="text-lg">🔍</p>
+                                  <p class="text-xl font-black text-slate-700"><%= data.count %></p>
+                                  <p class="text-[10px] font-bold text-slate-600 uppercase"><%= level %></p>
+                                  <p class="text-xs text-slate-600"><%= data.percentage %>%</p>
+                                </div>
+                              <% "INFO" -> %>
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-2 text-center">
+                                  <p class="text-lg">ℹ️</p>
+                                  <p class="text-xl font-black text-blue-700"><%= data.count %></p>
+                                  <p class="text-[10px] font-bold text-blue-600 uppercase"><%= level %></p>
+                                  <p class="text-xs text-blue-600"><%= data.percentage %>%</p>
+                                </div>
+                              <% "WARN" -> %>
+                                <div class="bg-amber-50 border border-amber-200 rounded-lg p-2 text-center">
+                                  <p class="text-lg">⚠️</p>
+                                  <p class="text-xl font-black text-amber-700"><%= data.count %></p>
+                                  <p class="text-[10px] font-bold text-amber-600 uppercase"><%= level %></p>
+                                  <p class="text-xs text-amber-600"><%= data.percentage %>%</p>
+                                </div>
+                              <% "ERROR" -> %>
+                                <div class="bg-rose-50 border border-rose-200 rounded-lg p-2 text-center">
+                                  <p class="text-lg">❌</p>
+                                  <p class="text-xl font-black text-rose-700"><%= data.count %></p>
+                                  <p class="text-[10px] font-bold text-rose-600 uppercase"><%= level %></p>
+                                  <p class="text-xs text-rose-600"><%= data.percentage %>%</p>
+                                </div>
+                              <% "FATAL" -> %>
+                                <div class="bg-red-50 border border-red-200 rounded-lg p-2 text-center">
+                                  <p class="text-lg">💀</p>
+                                  <p class="text-xl font-black text-red-700"><%= data.count %></p>
+                                  <p class="text-[10px] font-bold text-red-600 uppercase"><%= level %></p>
+                                  <p class="text-xs text-red-600"><%= data.percentage %>%</p>
+                                </div>
+                              <% _ -> %>
+                                <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
+                                  <p class="text-lg">•</p>
+                                  <p class="text-xl font-black text-slate-700"><%= data.count %></p>
+                                  <p class="text-[10px] font-bold text-slate-600 uppercase"><%= level %></p>
+                                  <p class="text-xs text-slate-600"><%= data.percentage %>%</p>
+                                </div>
+                            <% end %>
+                          <% end %>
+                        </div>
                       </div>
+                    <% end %>
 
-                      <%!-- Distribution by Level --%>
-                      <%= if result.metrics[:level_distribution] do %>
-                        <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                          <p class="text-xs text-slate-600 font-bold mb-3">
-                            Distribution by Level
-                          </p>
-                          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <%= for {level, data} <- result.metrics.level_distribution do %>
-                              <%= case level do %>
-                                <% "DEBUG" -> %>
-                                  <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
-                                    <p class="text-lg">🔍</p>
-                                    <p class="text-xl font-black text-slate-700"><%= data.count %></p>
-                                    <p class="text-[10px] font-bold text-slate-600 uppercase"><%= level %></p>
-                                    <p class="text-xs text-slate-600"><%= data.percentage %>%</p>
-                                  </div>
-                                <% "INFO" -> %>
-                                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-2 text-center">
-                                    <p class="text-lg">ℹ️</p>
-                                    <p class="text-xl font-black text-blue-700"><%= data.count %></p>
-                                    <p class="text-[10px] font-bold text-blue-600 uppercase"><%= level %></p>
-                                    <p class="text-xs text-blue-600"><%= data.percentage %>%</p>
-                                  </div>
-                                <% "WARN" -> %>
-                                  <div class="bg-amber-50 border border-amber-200 rounded-lg p-2 text-center">
-                                    <p class="text-lg">⚠️</p>
-                                    <p class="text-xl font-black text-amber-700"><%= data.count %></p>
-                                    <p class="text-[10px] font-bold text-amber-600 uppercase"><%= level %></p>
-                                    <p class="text-xs text-amber-600"><%= data.percentage %>%</p>
-                                  </div>
-                                <% "ERROR" -> %>
-                                  <div class="bg-rose-50 border border-rose-200 rounded-lg p-2 text-center">
-                                    <p class="text-lg">❌</p>
-                                    <p class="text-xl font-black text-rose-700"><%= data.count %></p>
-                                    <p class="text-[10px] font-bold text-rose-600 uppercase"><%= level %></p>
-                                    <p class="text-xs text-rose-600"><%= data.percentage %>%</p>
-                                  </div>
-                                <% "FATAL" -> %>
-                                  <div class="bg-red-50 border border-red-200 rounded-lg p-2 text-center">
-                                    <p class="text-lg">💀</p>
-                                    <p class="text-xl font-black text-red-700"><%= data.count %></p>
-                                    <p class="text-[10px] font-bold text-red-600 uppercase"><%= level %></p>
-                                    <p class="text-xs text-red-600"><%= data.percentage %>%</p>
-                                  </div>
-                                <% _ -> %>
-                                  <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
-                                    <p class="text-lg">•</p>
-                                    <p class="text-xl font-black text-slate-700"><%= data.count %></p>
-                                    <p class="text-[10px] font-bold text-slate-600 uppercase"><%= level %></p>
-                                    <p class="text-xs text-slate-600"><%= data.percentage %>%</p>
-                                  </div>
-                              <% end %>
-                            <% end %>
-                          </div>
+                    <%!-- Components with Errors --%>
+                    <%= if r.metrics[:top_error_components] && length(r.metrics.top_error_components) > 0 do %>
+                      <div class="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                        <p class="text-xs text-amber-600 font-bold mb-2">
+                          Components with Errors
+                        </p>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          <%= for component <- Enum.take(r.metrics.top_error_components, 6) do %>
+                            <div class="bg-white rounded-lg px-3 py-2 border border-amber-200">
+                              <p class="font-bold text-slate-700 text-sm"><%= component.component %></p>
+                              <p class="text-xs text-amber-600"><%= component.error_count %> errors</p>
+                            </div>
+                          <% end %>
                         </div>
-                      <% end %>
+                      </div>
+                    <% end %>
 
-                      <%!-- Components with Errors --%>
-                      <%= if result.metrics[:top_error_components] && length(result.metrics.top_error_components) > 0 do %>
-                        <div class="bg-amber-50 rounded-xl p-4 border border-amber-100">
-                          <p class="text-xs text-amber-600 font-bold mb-2">
-                            Components with Errors
-                          </p>
-                          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            <%= for component <- Enum.take(result.metrics.top_error_components, 6) do %>
-                              <div class="bg-white rounded-lg px-3 py-2 border border-amber-200">
-                                <p class="font-bold text-slate-700 text-sm"><%= component.component %></p>
-                                <p class="text-xs text-amber-600"><%= component.error_count %> errors</p>
-                              </div>
-                            <% end %>
-                          </div>
-                        </div>
-                      <% end %>
-
-                      <%!-- Frequent Errors --%>
-                      <%= if result.metrics[:most_frequent_errors] && length(result.metrics.most_frequent_errors) > 0 do %>
-                        <div class="bg-rose-50 rounded-xl p-4 border border-rose-100">
-                          <p class="text-xs text-rose-600 font-bold mb-2">Most Frequent Errors</p>
-                          <div class="space-y-2">
-                            <%= for {error_item, index} <- Enum.with_index(Enum.take(result.metrics.most_frequent_errors, 3), 1) do %>
-                              <div class="bg-white rounded-lg p-3 border border-rose-200">
-                                <div class="flex items-start gap-2">
-                                  <span class="bg-rose-100 text-rose-700 font-bold text-xs px-2 py-1 rounded">
-                                    <%= index %>
-                                  </span>
-                                  <div class="flex-1">
-                                    <p class="text-sm text-slate-700 line-clamp-2"><%= error_item.message %></p>
-                                    <p class="text-xs text-rose-600 mt-1"><%= error_item.count %> occurrences</p>
-                                  </div>
+                    <%!-- Frequent Errors --%>
+                    <%= if r.metrics[:most_frequent_errors] && length(r.metrics.most_frequent_errors) > 0 do %>
+                      <div class="bg-rose-50 rounded-xl p-4 border border-rose-100">
+                        <p class="text-xs text-rose-600 font-bold mb-2">Most Frequent Errors</p>
+                        <div class="space-y-2">
+                          <%= for {error_item, index} <- Enum.with_index(Enum.take(r.metrics.most_frequent_errors, 3), 1) do %>
+                            <div class="bg-white rounded-lg p-3 border border-rose-200">
+                              <div class="flex items-start gap-2">
+                                <span class="bg-rose-100 text-rose-700 font-bold text-xs px-2 py-1 rounded">
+                                  <%= index %>
+                                </span>
+                                <div class="flex-1">
+                                  <p class="text-sm text-slate-700 line-clamp-2"><%= error_item.message %></p>
+                                  <p class="text-xs text-rose-600 mt-1"><%= error_item.count %> occurrences</p>
                                 </div>
                               </div>
-                            <% end %>
-                          </div>
+                            </div>
+                          <% end %>
                         </div>
-                      <% end %>
-                    </div>
-                  <% end %>
-                </div>
+                      </div>
+                    <% end %>
+                  </div>
+                </.file_result_card>
               <% end %>
             </div>
           <% end %>

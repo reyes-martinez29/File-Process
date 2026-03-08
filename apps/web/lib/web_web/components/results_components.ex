@@ -90,4 +90,104 @@ defmodule WebWeb.ResultsComponents do
     </div>
     """
   end
+
+  @doc """
+  Renders a file result card with header and custom metrics content via slot.
+
+  The slot receives the result assign so metrics can be accessed inside.
+  Use `grid_layout: false` for LOG files which need custom layout.
+
+  ## Examples
+
+      <.file_result_card result={result} color="indigo" icon_path="M9 17v-2m3 2v-4...">
+        <.metric_card label="Sales" value={result.metrics.total_sales} color="emerald" />
+      </.file_result_card>
+
+      <.file_result_card result={result} color="purple" icon_path="..." grid_layout={false}>
+        <div class="space-y-4">
+          <%!-- Custom LOG structure --%>
+        </div>
+      </.file_result_card>
+  """
+  attr :result, :map, required: true
+  attr :color, :string, required: true
+  attr :icon_path, :string, required: true
+  attr :grid_layout, :boolean, default: true
+  slot :inner_block, required: true
+
+  def file_result_card(assigns) do
+    ~H"""
+    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+      <%!-- File header --%>
+      <div class={"bg-gradient-to-r from-#{@color}-50 to-#{@color}-50 px-6 py-4 border-b border-#{@color}-100"}>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class={"bg-#{@color}-100 p-2 rounded-lg text-#{@color}-600"}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d={@icon_path}
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-800"><%= @result.filename %></h3>
+              <p class="text-xs text-slate-500">
+                <%= @result.lines_processed %> records • <%= @result.duration_ms %>ms
+              </p>
+            </div>
+          </div>
+          <.status_badge status={@result.status} />
+        </div>
+      </div>
+
+      <%!-- Metrics content --%>
+      <%= if @result.status != :error do %>
+        <div class="p-6">
+          <%= if @grid_layout do %>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <%= render_slot(@inner_block, @result) %>
+            </div>
+          <% else %>
+            <%= render_slot(@inner_block, @result) %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders a status badge for file processing status.
+
+  ## Examples
+
+      <.status_badge status={:ok} />
+      <.status_badge status={:error} />
+  """
+  attr :status, :atom, required: true
+
+  def status_badge(assigns) do
+    config = case assigns.status do
+      :ok -> %{color: "emerald", icon: "✓", text: "Success"}
+      :error -> %{color: "rose", icon: "✕", text: "Error"}
+      :partial -> %{color: "amber", icon: "⚠", text: "Partial"}
+      _ -> %{color: "slate", icon: "?", text: "Unknown"}
+    end
+    assigns = assign(assigns, :config, config)
+
+    ~H"""
+    <span class={"px-3 py-1 rounded-full text-xs font-bold bg-#{@config.color}-100 text-#{@config.color}-700"}>
+      <%= @config.icon %> <%= @config.text %>
+    </span>
+    """
+  end
 end
