@@ -1,5 +1,6 @@
 defmodule WebWeb.BenchmarkLive do
   use WebWeb, :live_view
+  require Logger
 
   @impl true
   def mount(_params, _session, socket) do
@@ -42,18 +43,49 @@ defmodule WebWeb.BenchmarkLive do
     parent = self()
 
     Task.start(fn ->
-      # Extract file paths from file info maps
-      temp_files = Enum.map(files, & &1["path"])
+      try do
+        Logger.info("Starting benchmark execution", benchmark_id: benchmark_id, file_count: length(files))
 
-      # Run benchmark
-      opts = [benchmark: true, verbose: false]
-      resultado = FProcess.process_files(temp_files, opts)
+        # Extract file paths from file info maps
+        temp_files = Enum.map(files, & &1["path"])
 
-      # Clean up files from BenchmarkStore (this also deletes files from filesystem)
-      Web.BenchmarkStore.delete(benchmark_id)
+        # Run benchmark
+        opts = [benchmark: true, verbose: false]
+        resultado = FProcess.process_files(temp_files, opts)
 
-      # Send results back to LiveView
-      send(parent, {:benchmark_complete, resultado})
+        # Clean up files from BenchmarkStore (this also deletes files from filesystem)
+        Web.BenchmarkStore.delete(benchmark_id)
+
+        Logger.info("Benchmark execution completed successfully", benchmark_id: benchmark_id)
+
+        # Send results back to LiveView
+        send(parent, {:benchmark_complete, resultado})
+      rescue
+        e in File.Error ->
+          error_msg = "File operation failed: #{Exception.message(e)}"
+          Logger.error("Benchmark file error",
+            benchmark_id: benchmark_id,
+            error: error_msg,
+            stacktrace: __STACKTRACE__
+          )
+
+          # Attempt cleanup even on error
+          Web.BenchmarkStore.delete(benchmark_id)
+
+          send(parent, {:benchmark_complete, {:error, error_msg}})
+
+        e ->
+          error_msg = "Internal processing error: #{Exception.message(e)}"
+          Logger.error("Benchmark processing crashed",
+            benchmark_id: benchmark_id,
+            error: Exception.format(:error, e, __STACKTRACE__)
+          )
+
+          # Attempt cleanup even on error
+          Web.BenchmarkStore.delete(benchmark_id)
+
+          send(parent, {:benchmark_complete, {:error, error_msg}})
+      end
     end)
 
     {:noreply, socket}
