@@ -73,6 +73,52 @@ defmodule WebWeb.Layouts do
   end
 
   @doc """
+  Renders the application header with logo and customizable navigation.
+
+  ## Examples
+
+      <.app_header>
+        <:nav_actions>
+          <.link navigate={~p"/live/home"} class="...">← Back</.link>
+        </:nav_actions>
+      </.app_header>
+
+  """
+  slot :nav_actions, required: false, doc: "Navigation buttons and actions"
+
+  def app_header(assigns) do
+    ~H"""
+    <header class="bg-white px-8 py-4 shadow-sm flex justify-between items-center border-b border-slate-100">
+      <div class="flex items-center gap-3">
+        <div class="bg-amber-100 p-2 rounded-lg text-amber-500">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-8 w-8"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+            />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-slate-800 leading-none">File Processor</h1>
+          <p class="text-sm text-slate-500">Intelligent processing system</p>
+        </div>
+      </div>
+      <nav class="flex gap-4">
+        <%= render_slot(@nav_actions) %>
+      </nav>
+    </header>
+    """
+  end
+
+  @doc """
   Shows the flash group with standard titles and content.
 
   ## Examples

@@ -1,19 +1,29 @@
-<div class="min-h-screen bg-slate-50">
-  <div class="max-w-7xl mx-auto p-8">
-    <%!-- Header --%>
-    <div class="flex justify-between items-center mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-slate-800">Processing Errors</h1>
-        <p class="text-slate-600 mt-2">
-          Files with errors or partial processing issues
-        </p>
-      </div>
+<div class="min-h-screen bg-slate-50 font-sans">
+  <Layouts.app_header>
+    <:nav_actions>
       <.link
         navigate={~p"/live/results?id=#{@report_id}"}
-        class="text-indigo-600 hover:text-indigo-800 font-medium"
+        class="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-slate-200 transition-colors"
       >
         ← Back to all results
       </.link>
+
+      <div class="bg-rose-500 text-white px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 shadow-lg shadow-rose-100">
+        <span class="bg-rose-400 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">
+          ⚠
+        </span>
+        Errors View
+      </div>
+    </:nav_actions>
+  </Layouts.app_header>
+
+  <div class="max-w-7xl mx-auto p-8">
+    <%!-- Page Title --%>
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-slate-800">Processing Errors</h1>
+      <p class="text-slate-600 mt-2">
+        Files with errors or partial processing issues
+      </p>
     </div>
 
     <%!-- Error Summary --%>

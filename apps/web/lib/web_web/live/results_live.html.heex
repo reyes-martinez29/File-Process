@@ -1,28 +1,6 @@
 <div class="min-h-screen bg-slate-50 font-sans">
-  <header class="bg-white px-8 py-4 shadow-sm flex justify-between items-center border-b border-slate-100">
-    <div class="flex items-center gap-3">
-      <div class="bg-amber-100 p-2 rounded-lg text-amber-500">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-8 w-8"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-          />
-        </svg>
-      </div>
-      <div>
-        <h1 class="text-xl font-bold text-slate-800 leading-none">File Processor</h1>
-        <p class="text-sm text-slate-500">Intelligent processing system</p>
-      </div>
-    </div>
-    <nav class="flex gap-4">
+  <Layouts.app_header>
+    <:nav_actions>
       <.link
         navigate={~p"/live/home"}
         class="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-slate-200 transition-colors"
@@ -60,8 +38,8 @@
         </span>
         Report Ready
       </div>
-    </nav>
-  </header>
+    </:nav_actions>
+  </Layouts.app_header>
 
   <main class="max-w-7xl mx-auto p-8 space-y-8">
     <%!-- Processing Info Banner --%>
