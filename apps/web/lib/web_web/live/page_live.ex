@@ -101,7 +101,7 @@ defmodule WebWeb.PageLive do
               )
 
               # Store report and redirect to ResultsLive
-              report_id = "report_#{timestamp}_#{:rand.uniform(10000)}"
+              report_id = "report_#{System.unique_integer([:positive, :monotonic])}"
               Web.ReportStore.put(report_id, reporte)
 
               socket =
@@ -134,7 +134,7 @@ defmodule WebWeb.PageLive do
     else
       socket    = assign(socket, :processing, true)
       timestamp = System.system_time(:millisecond)
-      benchmark_id = "bench_#{timestamp}_#{:rand.uniform(10000)}"
+      benchmark_id = "bench_#{System.unique_integer([:positive, :monotonic])}"
 
       # Copy uploaded files to temporary files and store info
       temp_files =
