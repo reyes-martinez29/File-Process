@@ -13,8 +13,6 @@ defmodule WebWeb.PageLive do
   def mount(_params, _session, socket) do
     socket =
       socket
-      |> assign(:page, :home)
-      |> assign(:benchmark_data, nil)
       |> assign(:processing, false)
       |> assign(:processing_mode, "sequential")
       |> assign(:show_advanced, false)
@@ -102,12 +100,14 @@ defmodule WebWeb.PageLive do
                 %{mode: mode, request_id: request_id}
               )
 
-              # TODO: Revisa aqui , es donde se deberia conectar el resultado con el front
-              # Por ahora solo mostramos flash de éxito y volvemos a home
+              # Store report and redirect to ResultsLive
+              report_id = "report_#{timestamp}_#{:rand.uniform(10000)}"
+              Web.ReportStore.put(report_id, reporte)
+
               socket =
                 socket
                 |> assign(:processing, false)
-                |> put_flash(:info, build_success_message(reporte, length(temp_files)))
+                |> push_navigate(to: ~p"/live/results?id=#{report_id}")
 
               {:noreply, socket}
 
@@ -134,44 +134,35 @@ defmodule WebWeb.PageLive do
     else
       socket    = assign(socket, :processing, true)
       timestamp = System.system_time(:millisecond)
+      benchmark_id = "bench_#{timestamp}_#{:rand.uniform(10000)}"
 
+      # Copy uploaded files to temporary files and store info
       temp_files =
         consume_uploaded_entries(socket, :archivos, fn %{path: path}, entry ->
           unique_name = "#{timestamp}_#{System.unique_integer([:positive])}_#{entry.client_name}"
           temp_path   = Path.join(System.tmp_dir!(), unique_name)
           File.cp!(path, temp_path)
-          {:ok, temp_path}
+
+          file_info = %{
+            "path" => temp_path,
+            "filename" => entry.client_name,
+            "content_type" => entry.client_type
+          }
+
+          {:ok, file_info}
         end)
 
-      opts      = [benchmark: true, verbose: false]
-      resultado = FProcess.process_files(temp_files, opts)
-      Enum.each(temp_files, &File.rm/1)
+      # Store files info in BenchmarkStore for LiveView to access
+      Web.BenchmarkStore.put(benchmark_id, temp_files)
 
-      case resultado do
-        {:ok, reporte} ->
-          socket =
-            socket
-            |> assign(:processing, false)
-            |> assign(:benchmark_data, reporte.benchmark_data)
-            |> assign(:page, :benchmark)
+      # Redirect to BenchmarkLive
+      socket =
+        socket
+        |> assign(:processing, false)
+        |> push_navigate(to: ~p"/live/benchmark?id=#{benchmark_id}")
 
-          {:noreply, socket}
-
-        {:error, razon} ->
-          {:noreply, socket |> assign(:processing, false) |> put_flash(:error, "Benchmark error: #{razon}")}
-      end
+      {:noreply, socket}
     end
-  end
-
-  def handle_event("go_home", _params, socket) do
-    socket =
-      socket
-      |> assign(:page, :home)
-      |> assign(:benchmark_data, nil)
-      |> assign(:processing_mode, "sequential")
-      |> assign(:show_advanced, false)
-
-    {:noreply, socket}
   end
 
   # ============================================================================
@@ -180,10 +171,7 @@ defmodule WebWeb.PageLive do
 
   @impl true
   def render(assigns) do
-    case assigns.page do
-      :home      -> home_live(assigns)
-      :benchmark -> benchmark_live(assigns)
-    end
+    home_live(assigns)
   end
 
   # ============================================================================
@@ -276,10 +264,6 @@ defmodule WebWeb.PageLive do
     else
       :ok
     end
-  end
-
-  defp build_success_message(reporte, total_files) do
-    "Se procesaron correctamente #{reporte.success_count} de #{total_files} archivo(s)."
   end
 
   defp generate_request_id do
