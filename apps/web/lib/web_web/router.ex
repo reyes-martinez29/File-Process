@@ -26,6 +26,7 @@ defmodule WebWeb.Router do
     post "/benchmark", PageController, :benchmark_results
 
     # LiveView routes
+    live "/live/home", PageLive, :home
     live "/live/results", ResultsLive, :index
     live "/live/errors", ErrorsLive, :index
     live "/live/benchmark", BenchmarkLive, :index
