@@ -23,6 +23,10 @@ defmodule WebWeb.Router do
     get "/results", PageController, :results
     get "/errors", PageController, :errors
     post "/benchmark", PageController, :benchmark_results
+
+    live "/live",           PageLive, :home_live
+    live "/results_live",   PageLive, :results_live
+    live "/benchmark_live", PageLive, :benchmark_live
   end
 
   # Other scopes may use custom stacks.
