@@ -28,7 +28,7 @@
               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
             />
           </svg>
-          View Errors (<%= @report.error_count %>)
+          View Errors ({@report.error_count})
         </.link>
       <% end %>
 
@@ -43,7 +43,7 @@
 
   <main class="max-w-7xl mx-auto p-8 space-y-8">
     <%!-- Processing Info Banner --%>
-    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-wrap lg:flex-nowrap gap-8 justify-around">
+    <aside class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-wrap lg:flex-nowrap gap-8 justify-around" role="complementary" aria-label="Processing metadata">
       <div class="flex items-center gap-3">
         <div class="p-2 bg-indigo-50 rounded-xl text-indigo-500 text-xl">📅</div>
         <div>
@@ -51,7 +51,7 @@
             Generated
           </p>
           <p class="text-sm font-bold text-slate-700">
-            <%= Calendar.strftime(@report.start_time, "%Y-%m-%d %H:%M") %>
+            {Calendar.strftime(@report.start_time, "%Y-%m-%d %H:%M")}
           </p>
         </div>
       </div>
@@ -60,10 +60,10 @@
         <div class="p-2 bg-slate-100 rounded-xl text-slate-500 text-xl">⚙️</div>
         <div>
           <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mode</p>
-          <p class="text-sm font-bold text-slate-700"><%= @report.mode %></p>
+          <p class="text-sm font-bold text-slate-700">{@report.mode}</p>
         </div>
       </div>
-    </div>
+    </aside>
 
     <%!-- Executive Summary --%>
     <section class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
@@ -119,40 +119,35 @@
             x-bind:class="tab === 'csv' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'"
             class="px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
           >
-            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
-            CSV
+            <span class="w-2 h-2 rounded-full bg-indigo-500"></span> CSV
           </button>
           <button
             @click="tab = 'json'"
             x-bind:class="tab === 'json' ? 'bg-white shadow-sm text-amber-600' : 'text-slate-500 hover:text-slate-700'"
             class="px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
           >
-            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-            JSON
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span> JSON
           </button>
           <button
             @click="tab = 'xml'"
             x-bind:class="tab === 'xml' ? 'bg-white shadow-sm text-green-600' : 'text-slate-500 hover:text-slate-700'"
             class="px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
           >
-            <span class="w-2 h-2 rounded-full bg-green-500"></span>
-            XML
+            <span class="w-2 h-2 rounded-full bg-green-500"></span> XML
           </button>
           <button
             @click="tab = 'log'"
             x-bind:class="tab === 'log' ? 'bg-white shadow-sm text-purple-600' : 'text-slate-500 hover:text-slate-700'"
             class="px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
           >
-            <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-            LOG
+            <span class="w-2 h-2 rounded-full bg-purple-500"></span> LOG
           </button>
           <button
             @click="tab = 'summary'"
             x-bind:class="tab === 'summary' ? 'bg-white shadow-sm text-rose-600' : 'text-slate-500 hover:text-slate-700'"
             class="px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
           >
-            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
-            Summary
+            <span class="w-2 h-2 rounded-full bg-rose-500"></span> Summary
           </button>
         </div>
       </div>
@@ -166,10 +161,10 @@
             <div class="space-y-4">
               <%= for result <- Enum.filter(@report.results, fn r -> r.type == :csv end) do %>
                 <.file_result_card
+                  :let={r}
                   result={result}
                   color="indigo"
                   icon_path="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  :let={r}
                 >
                   <%= if r.metrics[:total_sales] do %>
                     <.metric_card
@@ -209,10 +204,10 @@
                         Best Selling Product
                       </p>
                       <p class="text-lg font-black text-indigo-700">
-                        <%= r.metrics.best_selling_product.name %>
+                        {r.metrics.best_selling_product.name}
                       </p>
                       <p class="text-sm text-indigo-600">
-                        <%= r.metrics.best_selling_product.quantity %> units
+                        {r.metrics.best_selling_product.quantity} units
                       </p>
                     </div>
                   <% end %>
@@ -222,10 +217,10 @@
                       <p class="text-xs text-rose-600 font-bold mb-1">Top Category</p>
                       <div class="flex items-center justify-between">
                         <p class="text-lg font-black text-rose-700">
-                          <%= r.metrics.top_category.name %>
+                          {r.metrics.top_category.name}
                         </p>
                         <p class="text-xl font-black text-rose-700">
-                          $<%= :erlang.float_to_binary(r.metrics.top_category.revenue, decimals: 2) %>
+                          ${:erlang.float_to_binary(r.metrics.top_category.revenue, decimals: 2)}
                         </p>
                       </div>
                     </div>
@@ -235,7 +230,7 @@
                     <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 col-span-2 md:col-span-3">
                       <p class="text-xs text-slate-600 font-bold mb-1">Date Range</p>
                       <p class="text-sm font-bold text-slate-700">
-                        <%= r.metrics.date_range.from %> → <%= r.metrics.date_range.to %>
+                        {r.metrics.date_range.from} → {r.metrics.date_range.to}
                       </p>
                     </div>
                   <% end %>
@@ -253,10 +248,10 @@
             <div class="space-y-4">
               <%= for result <- Enum.filter(@report.results, fn r -> r.type == :json end) do %>
                 <.file_result_card
+                  :let={r}
                   result={result}
                   color="amber"
                   icon_path="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  :let={r}
                 >
                   <%= if r.metrics[:total_users] do %>
                     <.metric_card
@@ -302,10 +297,10 @@
                     <div class="bg-amber-50 rounded-xl p-4 border border-amber-100">
                       <p class="text-xs text-amber-600 font-bold mb-1">Peak Hour</p>
                       <p class="text-2xl font-black text-amber-700">
-                        <%= r.metrics.peak_hour.hour %>:00
+                        {r.metrics.peak_hour.hour}:00
                       </p>
                       <p class="text-xs text-amber-600">
-                        <%= r.metrics.peak_hour.session_count %> sessions
+                        {r.metrics.peak_hour.session_count} sessions
                       </p>
                     </div>
                   <% end %>
@@ -317,11 +312,11 @@
                         <%= for {action_item, index} <- Enum.with_index(Enum.take(r.metrics.top_actions, 5), 1) do %>
                           <div class="flex items-center justify-between text-sm">
                             <span class="text-slate-700">
-                              <span class="font-bold text-rose-600"><%= index %>.</span>
-                              <%= action_item.action %>
+                              <span class="font-bold text-rose-600">{index}.</span>
+                              {action_item.action}
                             </span>
                             <span class="font-bold text-slate-600">
-                              <%= action_item.count %> times
+                              {action_item.count} times
                             </span>
                           </div>
                         <% end %>
@@ -342,10 +337,10 @@
             <div class="space-y-4">
               <%= for result <- Enum.filter(@report.results, fn r -> r.type == :xml end) do %>
                 <.file_result_card
+                  :let={r}
                   result={result}
                   color="green"
                   icon_path="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                  :let={r}
                 >
                   <%= if r.metrics[:total_products] do %>
                     <.metric_card
@@ -400,11 +395,11 @@
             <div class="space-y-4">
               <%= for result <- Enum.filter(@report.results, fn r -> r.type == :log end) do %>
                 <.file_result_card
+                  :let={r}
                   result={result}
                   color="purple"
                   icon_path="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   grid_layout={false}
-                  :let={r}
                 >
                   <div class="space-y-4">
                     <%!-- Total Entries & Critical Errors --%>
@@ -438,44 +433,56 @@
                               <% "DEBUG" -> %>
                                 <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
                                   <p class="text-lg">🔍</p>
-                                  <p class="text-xl font-black text-slate-700"><%= data.count %></p>
-                                  <p class="text-[10px] font-bold text-slate-600 uppercase"><%= level %></p>
-                                  <p class="text-xs text-slate-600"><%= data.percentage %>%</p>
+                                  <p class="text-xl font-black text-slate-700">{data.count}</p>
+                                  <p class="text-[10px] font-bold text-slate-600 uppercase">
+                                    {level}
+                                  </p>
+                                  <p class="text-xs text-slate-600">{data.percentage}%</p>
                                 </div>
                               <% "INFO" -> %>
                                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-2 text-center">
                                   <p class="text-lg">ℹ️</p>
-                                  <p class="text-xl font-black text-blue-700"><%= data.count %></p>
-                                  <p class="text-[10px] font-bold text-blue-600 uppercase"><%= level %></p>
-                                  <p class="text-xs text-blue-600"><%= data.percentage %>%</p>
+                                  <p class="text-xl font-black text-blue-700">{data.count}</p>
+                                  <p class="text-[10px] font-bold text-blue-600 uppercase">
+                                    {level}
+                                  </p>
+                                  <p class="text-xs text-blue-600">{data.percentage}%</p>
                                 </div>
                               <% "WARN" -> %>
                                 <div class="bg-amber-50 border border-amber-200 rounded-lg p-2 text-center">
                                   <p class="text-lg">⚠️</p>
-                                  <p class="text-xl font-black text-amber-700"><%= data.count %></p>
-                                  <p class="text-[10px] font-bold text-amber-600 uppercase"><%= level %></p>
-                                  <p class="text-xs text-amber-600"><%= data.percentage %>%</p>
+                                  <p class="text-xl font-black text-amber-700">{data.count}</p>
+                                  <p class="text-[10px] font-bold text-amber-600 uppercase">
+                                    {level}
+                                  </p>
+                                  <p class="text-xs text-amber-600">{data.percentage}%</p>
                                 </div>
                               <% "ERROR" -> %>
                                 <div class="bg-rose-50 border border-rose-200 rounded-lg p-2 text-center">
                                   <p class="text-lg">❌</p>
-                                  <p class="text-xl font-black text-rose-700"><%= data.count %></p>
-                                  <p class="text-[10px] font-bold text-rose-600 uppercase"><%= level %></p>
-                                  <p class="text-xs text-rose-600"><%= data.percentage %>%</p>
+                                  <p class="text-xl font-black text-rose-700">{data.count}</p>
+                                  <p class="text-[10px] font-bold text-rose-600 uppercase">
+                                    {level}
+                                  </p>
+                                  <p class="text-xs text-rose-600">{data.percentage}%</p>
                                 </div>
                               <% "FATAL" -> %>
                                 <div class="bg-red-50 border border-red-200 rounded-lg p-2 text-center">
                                   <p class="text-lg">💀</p>
-                                  <p class="text-xl font-black text-red-700"><%= data.count %></p>
-                                  <p class="text-[10px] font-bold text-red-600 uppercase"><%= level %></p>
-                                  <p class="text-xs text-red-600"><%= data.percentage %>%</p>
+                                  <p class="text-xl font-black text-red-700">{data.count}</p>
+                                  <p class="text-[10px] font-bold text-red-600 uppercase">
+                                    {level}
+                                  </p>
+                                  <p class="text-xs text-red-600">{data.percentage}%</p>
                                 </div>
                               <% _ -> %>
                                 <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
                                   <p class="text-lg">•</p>
-                                  <p class="text-xl font-black text-slate-700"><%= data.count %></p>
-                                  <p class="text-[10px] font-bold text-slate-600 uppercase"><%= level %></p>
-                                  <p class="text-xs text-slate-600"><%= data.percentage %>%</p>
+                                  <p class="text-xl font-black text-slate-700">{data.count}</p>
+                                  <p class="text-[10px] font-bold text-slate-600 uppercase">
+                                    {level}
+                                  </p>
+                                  <p class="text-xs text-slate-600">{data.percentage}%</p>
                                 </div>
                             <% end %>
                           <% end %>
@@ -492,8 +499,10 @@
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                           <%= for component <- Enum.take(r.metrics.top_error_components, 6) do %>
                             <div class="bg-white rounded-lg px-3 py-2 border border-amber-200">
-                              <p class="font-bold text-slate-700 text-sm"><%= component.component %></p>
-                              <p class="text-xs text-amber-600"><%= component.error_count %> errors</p>
+                              <p class="font-bold text-slate-700 text-sm">
+                                {component.component}
+                              </p>
+                              <p class="text-xs text-amber-600">{component.error_count} errors</p>
                             </div>
                           <% end %>
                         </div>
@@ -509,11 +518,15 @@
                             <div class="bg-white rounded-lg p-3 border border-rose-200">
                               <div class="flex items-start gap-2">
                                 <span class="bg-rose-100 text-rose-700 font-bold text-xs px-2 py-1 rounded">
-                                  <%= index %>
+                                  {index}
                                 </span>
                                 <div class="flex-1">
-                                  <p class="text-sm text-slate-700 line-clamp-2"><%= error_item.message %></p>
-                                  <p class="text-xs text-rose-600 mt-1"><%= error_item.count %> occurrences</p>
+                                  <p class="text-sm text-slate-700 line-clamp-2">
+                                    {error_item.message}
+                                  </p>
+                                  <p class="text-xs text-rose-600 mt-1">
+                                    {error_item.count} occurrences
+                                  </p>
                                 </div>
                               </div>
                             </div>
@@ -532,7 +545,7 @@
         <div x-show="tab === 'summary'" style="display: none;" x-cloak>
           <div class="space-y-6">
             <%!-- Processing Overview --%>
-            <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white shadow-lg">
+            <article class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white shadow-lg" aria-label="Processing execution summary">
               <div class="flex items-center gap-3 mb-4">
                 <div class="bg-slate-700 p-2 rounded-lg">
                   <svg
@@ -557,36 +570,36 @@
                 <div class="flex items-center gap-2">
                   <span class="text-emerald-400 font-bold">[START]</span>
                   <span class="text-slate-300">
-                    <%= Calendar.strftime(@report.start_time, "%Y-%m-%d %H:%M:%S") %>
+                    {Calendar.strftime(@report.start_time, "%Y-%m-%d %H:%M:%S")}
                   </span>
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="text-blue-400 font-bold">[MODE]</span>
-                  <span class="text-slate-300"><%= @report.mode %></span>
+                  <span class="text-slate-300">{@report.mode}</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="text-amber-400 font-bold">[FILES]</span>
                   <span class="text-slate-300">
-                    <%= @report.total_files %> files (CSV: <%= @report.csv_count %>, JSON: <%= @report.json_count %>, XML: <%= @report.xml_count %>, LOG: <%= @report.log_count %>)
+                    {@report.total_files} files (CSV: {@report.csv_count}, JSON: {@report.json_count}, XML: {@report.xml_count}, LOG: {@report.log_count})
                   </span>
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="text-emerald-400 font-bold">[TIME]</span>
-                  <span class="text-slate-300"><%= @report.total_duration_ms %>ms</span>
+                  <span class="text-slate-300">{@report.total_duration_ms}ms</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="text-emerald-400 font-bold">[RESULT]</span>
-                  <span class="text-emerald-300">Success: <%= @report.success_count %></span>
-                  <span class="text-rose-300">Errors: <%= @report.error_count %></span>
+                  <span class="text-emerald-300">Success: {@report.success_count}</span>
+                  <span class="text-rose-300">Errors: {@report.error_count}</span>
                   <%= if @report.partial_count > 0 do %>
-                    <span class="text-amber-300">Partial: <%= @report.partial_count %></span>
+                    <span class="text-amber-300">Partial: {@report.partial_count}</span>
                   <% end %>
                 </div>
               </div>
-            </div>
+            </article>
 
             <%!-- File Status Overview --%>
-            <div class="bg-white rounded-2xl border border-slate-200 p-6">
+            <section class="bg-white rounded-2xl border border-slate-200 p-6" aria-label="Individual file status">
               <h3 class="text-lg font-bold text-slate-800 mb-4">File Status</h3>
               <div class="space-y-3">
                 <%= for result <- @report.results do %>
@@ -594,23 +607,23 @@
                     <div class="flex items-center gap-3">
                       <% type_config = file_type_config(result.type) %>
                       <span class={"bg-#{type_config.color}-100 text-#{type_config.color}-700 px-3 py-1 rounded-lg text-xs font-bold"}>
-                        <%= type_config.icon %> <%= type_config.label %>
+                        {type_config.icon} {type_config.label}
                       </span>
-                      <span class="font-medium text-slate-700"><%= result.filename %></span>
+                      <span class="font-medium text-slate-700">{result.filename}</span>
                     </div>
                     <div class="flex items-center gap-4">
                       <span class="text-xs text-slate-500">
-                        <%= result.lines_processed %> lines • <%= result.duration_ms %>ms
+                        {result.lines_processed} lines • {result.duration_ms}ms
                       </span>
                       <% status_config = status_badge_config(result.status) %>
                       <span class={"bg-#{status_config.color}-100 text-#{status_config.color}-700 px-2 py-1 rounded-full text-xs font-bold"}>
-                        <%= status_config.icon %>
+                        {status_config.icon}
                       </span>
                     </div>
                   </div>
                 <% end %>
               </div>
-            </div>
+            </section>
           </div>
         </div>
       </div>

@@ -17,36 +17,36 @@
     </:nav_actions>
   </Layouts.app_header>
 
-  <div class="max-w-7xl mx-auto p-8">
+  <main class="max-w-7xl mx-auto p-8">
     <%!-- Page Title --%>
-    <div class="mb-8">
+    <header class="mb-8">
       <h1 class="text-3xl font-bold text-slate-800">Processing Errors</h1>
       <p class="text-slate-600 mt-2">
         Files with errors or partial processing issues
       </p>
-    </div>
+    </header>
 
     <%!-- Error Summary --%>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" aria-label="Error statistics">
       <div class="bg-white p-6 rounded-xl shadow-sm border border-red-200">
-        <p class="text-3xl font-bold text-red-600"><%= @total_errors %></p>
+        <p class="text-3xl font-bold text-red-600">{@total_errors}</p>
         <p class="text-sm text-slate-500 mt-1">Files with issues</p>
       </div>
 
       <div class="bg-white p-6 rounded-xl shadow-sm border border-orange-200">
         <p class="text-3xl font-bold text-orange-600">
-          <%= Enum.count(@errors, &(&1.status == :error)) %>
+          {Enum.count(@errors, &(&1.status == :error))}
         </p>
         <p class="text-sm text-slate-500 mt-1">Complete errors</p>
       </div>
 
       <div class="bg-white p-6 rounded-xl shadow-sm border border-yellow-200">
         <p class="text-3xl font-bold text-yellow-600">
-          <%= Enum.count(@errors, &(&1.status == :partial)) %>
+          {Enum.count(@errors, &(&1.status == :partial))}
         </p>
         <p class="text-sm text-slate-500 mt-1">Partial processing</p>
       </div>
-    </div>
+    </section>
 
     <%!-- Success Message if no errors --%>
     <%= if @total_errors == 0 do %>
@@ -65,22 +65,26 @@
       </div>
     <% else %>
       <%!-- Alert Banner --%>
-      <div class="bg-red-50 border border-red-200 rounded-xl p-6 mb-6">
+      <aside
+        class="bg-red-50 border border-red-200 rounded-xl p-6 mb-6"
+        role="alert"
+        aria-live="polite"
+      >
         <div class="flex items-center gap-3">
           <span class="text-3xl">⚠️</span>
           <div>
             <p class="font-semibold text-red-900">
-              <%= @total_errors %> file(s) encountered problems during processing
+              {@total_errors} file(s) encountered problems during processing
             </p>
             <p class="text-sm text-red-700">
               Review details below to identify and fix issues in source files.
             </p>
           </div>
         </div>
-      </div>
+      </aside>
 
       <%!-- Error List --%>
-      <div class="space-y-4">
+      <section class="space-y-4" aria-label="Detailed error list">
         <%= for error <- @errors do %>
           <div class={[
             "bg-white p-6 rounded-xl shadow-sm border-l-4",
@@ -93,13 +97,13 @@
                 <%!-- File Icon --%>
                 <% type_config = file_type_config(error.type) %>
                 <span class="text-3xl">
-                  <%= type_config.icon %>
+                  {type_config.icon}
                 </span>
 
                 <div>
-                  <h3 class="font-bold text-lg text-slate-800"><%= error.filename %></h3>
+                  <h3 class="font-bold text-lg text-slate-800">{error.filename}</h3>
                   <p class="text-sm text-slate-500">
-                    Type: <%= error.type %> | Duration: <%= format_duration(error.duration_ms) %>
+                    Type: {error.type} | Duration: {format_duration(error.duration_ms)}
                   </p>
                 </div>
               </div>
@@ -107,7 +111,7 @@
               <%!-- Status Badge --%>
               <% status_config = status_badge_config(error.status) %>
               <span class="px-3 py-1 rounded-full text-sm font-semibold bg-#{status_config.color}-100 text-#{status_config.color}-800">
-                <%= status_config.icon %> <%= status_config.text %>
+                {status_config.icon} {status_config.text}
               </span>
             </div>
 
@@ -126,7 +130,7 @@
                   <%= for err <- error.errors do %>
                     <li class="text-sm text-red-700 flex items-start gap-2">
                       <span class="mt-1">•</span>
-                      <span class="flex-1 font-mono"><%= format_error(err) %></span>
+                      <span class="flex-1 font-mono">{format_error(err)}</span>
                     </li>
                   <% end %>
                 </ul>
@@ -145,10 +149,12 @@
                   <%= for {key, value} <- error.metrics do %>
                     <div>
                       <span class="text-sm text-slate-500">
-                        <%= key |> Atom.to_string() |> String.replace("_", " ") |> String.capitalize() %>
-                        :
+                        {key
+                        |> Atom.to_string()
+                        |> String.replace("_", " ")
+                        |> String.capitalize()} :
                       </span>
-                      <span class="font-semibold ml-2 text-slate-800"><%= value %></span>
+                      <span class="font-semibold ml-2 text-slate-800">{value}</span>
                     </div>
                   <% end %>
                 </div>
@@ -156,7 +162,7 @@
             <% end %>
           </div>
         <% end %>
-      </div>
+      </section>
     <% end %>
-  </div>
+  </main>
 </div>
