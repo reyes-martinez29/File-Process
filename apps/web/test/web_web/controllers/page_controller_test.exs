@@ -86,14 +86,14 @@ defmodule WebWeb.PageControllerTest do
         content_type: "text/csv"
       }
 
-      conn = post(conn, ~p"/upload", %{
-        "archivos" => [upload],
-        "processing_mode" => "sequential"
-      })
+      conn =
+        post(conn, ~p"/upload", %{
+          "archivos" => [upload],
+          "processing_mode" => "sequential"
+        })
 
-      html = html_response(conn, 200)
-      # Check for success indicators in the results page
-      assert html =~ "Resumen" || html =~ "Processing" || html =~ "Procesamiento"
+      # Controller now redirects to LiveView results page after successful processing
+      assert redirected_to(conn) =~ "/live/results"
       # Cleanup (file might already be deleted by controller)
       if File.exists?(temp_path), do: File.rm(temp_path)
     end
@@ -107,10 +107,11 @@ defmodule WebWeb.PageControllerTest do
         content_type: "text/csv"
       }
 
-      conn = post(conn, ~p"/upload", %{
-        "archivos" => [upload],
-        "processing_mode" => "parallel"
-      })
+      conn =
+        post(conn, ~p"/upload", %{
+          "archivos" => [upload],
+          "processing_mode" => "parallel"
+        })
 
       # Check that session contains report_id
       report_id = get_session(conn, :report_id)
@@ -123,6 +124,7 @@ defmodule WebWeb.PageControllerTest do
         [{^report_id, _report, timestamp}] ->
           assert is_integer(timestamp)
           assert timestamp > 0
+
         [] ->
           flunk("Report not found in ETS")
       end
@@ -141,10 +143,11 @@ defmodule WebWeb.PageControllerTest do
         content_type: "text/csv"
       }
 
-      conn = post(conn, ~p"/upload", %{
-        "archivos" => [upload],
-        "processing_mode" => "sequential"
-      })
+      conn =
+        post(conn, ~p"/upload", %{
+          "archivos" => [upload],
+          "processing_mode" => "sequential"
+        })
 
       assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "too large"
       assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "50 MB"
@@ -167,13 +170,14 @@ defmodule WebWeb.PageControllerTest do
       }
 
       # Submit without max_workers or timeout
-      conn = post(conn, ~p"/upload", %{
-        "archivos" => [upload],
-        "processing_mode" => "parallel"
-      })
+      conn =
+        post(conn, ~p"/upload", %{
+          "archivos" => [upload],
+          "processing_mode" => "parallel"
+        })
 
-      html = html_response(conn, 200)
-      assert html =~ "Resumen" || html =~ "Results" || html =~ "Procesamiento"
+      # Controller redirects to LiveView after successful processing
+      assert redirected_to(conn) =~ "/live/results"
       if File.exists?(temp_path), do: File.rm(temp_path)
     end
 
@@ -187,14 +191,14 @@ defmodule WebWeb.PageControllerTest do
       }
 
       # Submit with valid max_workers (4 is within any system's limit)
-      conn = post(conn, ~p"/upload", %{
-        "archivos" => [upload],
-        "processing_mode" => "parallel",
-        "max_workers" => "4"
-      })
+      conn =
+        post(conn, ~p"/upload", %{
+          "archivos" => [upload],
+          "processing_mode" => "parallel",
+          "max_workers" => "4"
+        })
 
-      html = html_response(conn, 200)
-      assert html =~ "Resumen" || html =~ "Results" || html =~ "Procesamiento"
+      assert redirected_to(conn) =~ "/live/results"
       if File.exists?(temp_path), do: File.rm(temp_path)
     end
 
@@ -208,14 +212,14 @@ defmodule WebWeb.PageControllerTest do
       }
 
       # Submit with valid timeout
-      conn = post(conn, ~p"/upload", %{
-        "archivos" => [upload],
-        "processing_mode" => "parallel",
-        "timeout" => "5000"
-      })
+      conn =
+        post(conn, ~p"/upload", %{
+          "archivos" => [upload],
+          "processing_mode" => "parallel",
+          "timeout" => "5000"
+        })
 
-      html = html_response(conn, 200)
-      assert html =~ "Resumen" || html =~ "Results" || html =~ "Procesamiento"
+      assert redirected_to(conn) =~ "/live/results"
       if File.exists?(temp_path), do: File.rm(temp_path)
     end
 
@@ -229,15 +233,15 @@ defmodule WebWeb.PageControllerTest do
       }
 
       # Submit with max_workers = 0 (below minimum)
-      conn = post(conn, ~p"/upload", %{
-        "archivos" => [upload],
-        "processing_mode" => "parallel",
-        "max_workers" => "0"
-      })
+      conn =
+        post(conn, ~p"/upload", %{
+          "archivos" => [upload],
+          "processing_mode" => "parallel",
+          "max_workers" => "0"
+        })
 
-      # Should still process successfully (clamped to 1)
-      html = html_response(conn, 200)
-      assert html =~ "Resumen" || html =~ "Results" || html =~ "Procesamiento"
+      # Should still process successfully (clamped to 1) and redirect
+      assert redirected_to(conn) =~ "/live/results"
       if File.exists?(temp_path), do: File.rm(temp_path)
     end
 
@@ -251,15 +255,15 @@ defmodule WebWeb.PageControllerTest do
       }
 
       # Submit with timeout = 500 (below minimum of 1000)
-      conn = post(conn, ~p"/upload", %{
-        "archivos" => [upload],
-        "processing_mode" => "parallel",
-        "timeout" => "500"
-      })
+      conn =
+        post(conn, ~p"/upload", %{
+          "archivos" => [upload],
+          "processing_mode" => "parallel",
+          "timeout" => "500"
+        })
 
-      # Should still process successfully (clamped to 1000)
-      html = html_response(conn, 200)
-      assert html =~ "Resumen" || html =~ "Results" || html =~ "Procesamiento"
+      # Should still process successfully (clamped to 1000) and redirect
+      assert redirected_to(conn) =~ "/live/results"
       if File.exists?(temp_path), do: File.rm(temp_path)
     end
   end
@@ -276,10 +280,11 @@ defmodule WebWeb.PageControllerTest do
     end
 
     test "GET /results with invalid report_id redirects to home", %{conn: conn} do
-      conn = conn
-      |> init_test_session(%{})
-      |> put_session(:report_id, "nonexistent_id")
-      |> get(~p"/results")
+      conn =
+        conn
+        |> init_test_session(%{})
+        |> put_session(:report_id, "nonexistent_id")
+        |> get(~p"/results")
 
       assert redirected_to(conn) == ~p"/"
       assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Report expired or not found"
@@ -289,6 +294,7 @@ defmodule WebWeb.PageControllerTest do
       # Insert a mock report into ETS with all required fields (using DateTime)
       report_id = "test_report_123"
       now = DateTime.utc_now()
+
       mock_report = %{
         start_time: now,
         end_time: now,
@@ -305,12 +311,14 @@ defmodule WebWeb.PageControllerTest do
         log_count: 0,
         results: []
       }
+
       :ets.insert(:reports_store, {report_id, mock_report, System.system_time(:second)})
 
-      conn = conn
-      |> init_test_session(%{})
-      |> put_session(:report_id, report_id)
-      |> get(~p"/results")
+      conn =
+        conn
+        |> init_test_session(%{})
+        |> put_session(:report_id, report_id)
+        |> get(~p"/results")
 
       html = html_response(conn, 200)
       assert html =~ "Processing Summary" || html =~ "Resumen"
@@ -332,6 +340,7 @@ defmodule WebWeb.PageControllerTest do
       # Insert a mock report into ETS with all required fields (using DateTime)
       report_id = "test_report_errors"
       now = DateTime.utc_now()
+
       mock_report = %{
         start_time: now,
         end_time: now,
@@ -348,12 +357,14 @@ defmodule WebWeb.PageControllerTest do
         log_count: 0,
         results: []
       }
+
       :ets.insert(:reports_store, {report_id, mock_report, System.system_time(:second)})
 
-      conn = conn
-      |> init_test_session(%{})
-      |> put_session(:report_id, report_id)
-      |> get(~p"/errors")
+      conn =
+        conn
+        |> init_test_session(%{})
+        |> put_session(:report_id, report_id)
+        |> get(~p"/errors")
 
       html = html_response(conn, 200)
       assert html =~ "Error Details" || html =~ "Errores"
@@ -374,14 +385,13 @@ defmodule WebWeb.PageControllerTest do
         content_type: "text/csv"
       }
 
-      conn = post(conn, ~p"/benchmark", %{
-        "archivos" => [upload]
-      })
+      conn =
+        post(conn, ~p"/benchmark", %{
+          "archivos" => [upload]
+        })
 
-      html = html_response(conn, 200)
-      assert html =~ "BENCHMARK"
-      assert html =~ "Sequential"
-      assert html =~ "Parallel"
+      # Controller redirects to LiveView benchmark page after preparing files
+      assert redirected_to(conn) =~ "/live/benchmark"
 
       if File.exists?(temp_path), do: File.rm(temp_path)
     end
@@ -398,9 +408,10 @@ defmodule WebWeb.PageControllerTest do
       # Count ETS entries before
       before_count = :ets.info(:reports_store)[:size]
 
-      _conn = post(conn, ~p"/benchmark", %{
-        "archivos" => [upload]
-      })
+      _conn =
+        post(conn, ~p"/benchmark", %{
+          "archivos" => [upload]
+        })
 
       # Count ETS entries after - should be the same
       after_count = :ets.info(:reports_store)[:size]
@@ -424,7 +435,13 @@ defmodule WebWeb.PageControllerTest do
     # Go up to project root from apps/web
     project_root = Path.join([File.cwd!(), "..", ".."])
     source_path = Path.join([project_root, "data", "valid", source_filename])
-    dest_path = Path.join(System.tmp_dir!(), "test_#{:erlang.unique_integer([:positive])}_#{source_filename}")
+
+    dest_path =
+      Path.join(
+        System.tmp_dir!(),
+        "test_#{:erlang.unique_integer([:positive])}_#{source_filename}"
+      )
+
     File.cp!(source_path, dest_path)
     dest_path
   end

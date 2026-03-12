@@ -1,0 +1,632 @@
+<div class="min-h-screen bg-slate-50 font-sans">
+  <Layouts.app_header>
+    <:nav_actions>
+      <.link
+        navigate={~p"/live/home"}
+        class="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-slate-200 transition-colors"
+      >
+        ← Back
+      </.link>
+
+      <%!-- View Errors Button --%>
+      <%= if @report.error_count > 0 do %>
+        <.link
+          navigate={~p"/live/errors?id=#{@report_id}"}
+          class="bg-rose-500 text-white px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-rose-600 transition-colors shadow-lg shadow-rose-100"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+          View Errors ({@report.error_count})
+        </.link>
+      <% end %>
+
+      <div class="bg-emerald-500 text-white px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 shadow-lg shadow-emerald-100">
+        <span class="bg-emerald-400 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">
+          ✓
+        </span>
+        Report Ready
+      </div>
+    </:nav_actions>
+  </Layouts.app_header>
+
+  <main class="max-w-7xl mx-auto p-8 space-y-8">
+    <%!-- Processing Info Banner --%>
+    <aside class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-wrap lg:flex-nowrap gap-8 justify-around" role="complementary" aria-label="Processing metadata">
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-indigo-50 rounded-xl text-indigo-500 text-xl">📅</div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            Generated
+          </p>
+          <p class="text-sm font-bold text-slate-700">
+            {Calendar.strftime(@report.start_time, "%Y-%m-%d %H:%M")}
+          </p>
+        </div>
+      </div>
+      <div class="h-10 w-[1px] bg-slate-100 hidden lg:block"></div>
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-slate-100 rounded-xl text-slate-500 text-xl">⚙️</div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mode</p>
+          <p class="text-sm font-bold text-slate-700">{@report.mode}</p>
+        </div>
+      </div>
+    </aside>
+
+    <%!-- Executive Summary --%>
+    <section class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+      <h2 class="text-2xl font-bold text-slate-800 mb-1">Executive Summary</h2>
+      <p class="text-slate-500 mb-8 text-sm">Key metrics from current processing</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <.summary_card icon="📂" value={@report.total_files} label="Files" />
+
+        <.summary_card
+          icon="⏱️"
+          value={"#{@report.total_duration_ms}ms"}
+          label="Total Time"
+        />
+
+        <.summary_card
+          icon="⚡"
+          value={
+            if @report.total_files > 0,
+              do: "#{Float.round(@report.total_duration_ms / @report.total_files, 2)}ms",
+              else: "0ms"
+          }
+          label="Average"
+        />
+
+        <.summary_card
+          icon="✅"
+          value={
+            if @report.total_files > 0,
+              do: "#{trunc(@report.success_count / @report.total_files * 100)}%",
+              else: "0%"
+          }
+          label="Success Rate"
+          variant="success"
+        />
+      </div>
+    </section>
+
+    <%!-- Detailed Analysis with Tabs --%>
+    <section
+      class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
+      x-data="{ tab: 'csv' }"
+    >
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800 mb-1">Detailed Analysis</h2>
+          <p class="text-slate-500 text-sm">Individual breakdown by format type</p>
+        </div>
+
+        <div class="flex bg-slate-100 p-1 rounded-2xl self-start">
+          <button
+            @click="tab = 'csv'"
+            x-bind:class="tab === 'csv' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'"
+            class="px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+          >
+            <span class="w-2 h-2 rounded-full bg-indigo-500"></span> CSV
+          </button>
+          <button
+            @click="tab = 'json'"
+            x-bind:class="tab === 'json' ? 'bg-white shadow-sm text-amber-600' : 'text-slate-500 hover:text-slate-700'"
+            class="px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+          >
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span> JSON
+          </button>
+          <button
+            @click="tab = 'xml'"
+            x-bind:class="tab === 'xml' ? 'bg-white shadow-sm text-green-600' : 'text-slate-500 hover:text-slate-700'"
+            class="px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+          >
+            <span class="w-2 h-2 rounded-full bg-green-500"></span> XML
+          </button>
+          <button
+            @click="tab = 'log'"
+            x-bind:class="tab === 'log' ? 'bg-white shadow-sm text-purple-600' : 'text-slate-500 hover:text-slate-700'"
+            class="px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+          >
+            <span class="w-2 h-2 rounded-full bg-purple-500"></span> LOG
+          </button>
+          <button
+            @click="tab = 'summary'"
+            x-bind:class="tab === 'summary' ? 'bg-white shadow-sm text-rose-600' : 'text-slate-500 hover:text-slate-700'"
+            class="px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+          >
+            <span class="w-2 h-2 rounded-full bg-rose-500"></span> Summary
+          </button>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <%!-- CSV Files Tab --%>
+        <div x-show="tab === 'csv'">
+          <%= if @report.csv_count == 0 do %>
+            <.empty_state message="No CSV files were processed" />
+          <% else %>
+            <div class="space-y-4">
+              <%= for result <- Enum.filter(@report.results, fn r -> r.type == :csv end) do %>
+                <.file_result_card
+                  :let={r}
+                  result={result}
+                  color="indigo"
+                  icon_path="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                >
+                  <%= if r.metrics[:total_sales] do %>
+                    <.metric_card
+                      label="Total Sales"
+                      value={"$#{r.metrics.total_sales}"}
+                      color="emerald"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:unique_products] do %>
+                    <.metric_card
+                      label="Unique Products"
+                      value={r.metrics.unique_products}
+                      color="blue"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:total_quantity] do %>
+                    <.metric_card
+                      label="Total Quantity"
+                      value={r.metrics.total_quantity}
+                      color="purple"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:average_discount] do %>
+                    <.metric_card
+                      label="Avg Discount"
+                      value={"#{r.metrics.average_discount}%"}
+                      color="amber"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:best_selling_product] do %>
+                    <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100 col-span-2">
+                      <p class="text-xs text-indigo-600 font-bold mb-1">
+                        Best Selling Product
+                      </p>
+                      <p class="text-lg font-black text-indigo-700">
+                        {r.metrics.best_selling_product.name}
+                      </p>
+                      <p class="text-sm text-indigo-600">
+                        {r.metrics.best_selling_product.quantity} units
+                      </p>
+                    </div>
+                  <% end %>
+
+                  <%= if r.metrics[:top_category] do %>
+                    <div class="bg-rose-50 rounded-xl p-4 border border-rose-100 col-span-2 md:col-span-3">
+                      <p class="text-xs text-rose-600 font-bold mb-1">Top Category</p>
+                      <div class="flex items-center justify-between">
+                        <p class="text-lg font-black text-rose-700">
+                          {r.metrics.top_category.name}
+                        </p>
+                        <p class="text-xl font-black text-rose-700">
+                          ${:erlang.float_to_binary(r.metrics.top_category.revenue, decimals: 2)}
+                        </p>
+                      </div>
+                    </div>
+                  <% end %>
+
+                  <%= if r.metrics[:date_range] do %>
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 col-span-2 md:col-span-3">
+                      <p class="text-xs text-slate-600 font-bold mb-1">Date Range</p>
+                      <p class="text-sm font-bold text-slate-700">
+                        {r.metrics.date_range.from} → {r.metrics.date_range.to}
+                      </p>
+                    </div>
+                  <% end %>
+                </.file_result_card>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <%!-- JSON Files Tab --%>
+        <div x-show="tab === 'json'" style="display: none;" x-cloak>
+          <%= if @report.json_count == 0 do %>
+            <.empty_state message="No JSON files were processed" />
+          <% else %>
+            <div class="space-y-4">
+              <%= for result <- Enum.filter(@report.results, fn r -> r.type == :json end) do %>
+                <.file_result_card
+                  :let={r}
+                  result={result}
+                  color="amber"
+                  icon_path="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                >
+                  <%= if r.metrics[:total_users] do %>
+                    <.metric_card
+                      label="Total Users"
+                      value={r.metrics.total_users}
+                      color="blue"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:active_users] do %>
+                    <.metric_card
+                      label="Active Users"
+                      value={r.metrics.active_users}
+                      color="emerald"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:inactive_users] do %>
+                    <.metric_card
+                      label="Inactive Users"
+                      value={r.metrics.inactive_users}
+                      color="slate"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:average_session_duration] do %>
+                    <.metric_card
+                      label="Avg Session Duration"
+                      value={r.metrics.average_session_duration}
+                      color="purple"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:total_pages_visited] do %>
+                    <.metric_card
+                      label="Total Pages Visited"
+                      value={r.metrics.total_pages_visited}
+                      color="indigo"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:peak_hour] do %>
+                    <div class="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                      <p class="text-xs text-amber-600 font-bold mb-1">Peak Hour</p>
+                      <p class="text-2xl font-black text-amber-700">
+                        {r.metrics.peak_hour.hour}:00
+                      </p>
+                      <p class="text-xs text-amber-600">
+                        {r.metrics.peak_hour.session_count} sessions
+                      </p>
+                    </div>
+                  <% end %>
+
+                  <%= if r.metrics[:top_actions] && length(r.metrics.top_actions) > 0 do %>
+                    <div class="bg-rose-50 rounded-xl p-4 border border-rose-100 col-span-2 md:col-span-3">
+                      <p class="text-xs text-rose-600 font-bold mb-2">Top Actions</p>
+                      <div class="space-y-1">
+                        <%= for {action_item, index} <- Enum.with_index(Enum.take(r.metrics.top_actions, 5), 1) do %>
+                          <div class="flex items-center justify-between text-sm">
+                            <span class="text-slate-700">
+                              <span class="font-bold text-rose-600">{index}.</span>
+                              {action_item.action}
+                            </span>
+                            <span class="font-bold text-slate-600">
+                              {action_item.count} times
+                            </span>
+                          </div>
+                        <% end %>
+                      </div>
+                    </div>
+                  <% end %>
+                </.file_result_card>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <%!-- XML Files Tab --%>
+        <div x-show="tab === 'xml'" style="display: none;" x-cloak>
+          <%= if @report.xml_count == 0 do %>
+            <.empty_state message="No XML files were processed" />
+          <% else %>
+            <div class="space-y-4">
+              <%= for result <- Enum.filter(@report.results, fn r -> r.type == :xml end) do %>
+                <.file_result_card
+                  :let={r}
+                  result={result}
+                  color="green"
+                  icon_path="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                >
+                  <%= if r.metrics[:total_products] do %>
+                    <.metric_card
+                      label="Total Products"
+                      value={r.metrics.total_products}
+                      color="green"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:categories_count] do %>
+                    <.metric_card
+                      label="Categories"
+                      value={r.metrics.categories_count}
+                      color="blue"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:low_stock_items] do %>
+                    <.metric_card
+                      label="Low Stock Items"
+                      value={r.metrics.low_stock_items}
+                      color="rose"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:total_inventory_value] do %>
+                    <.metric_card
+                      label="Inventory Value"
+                      value={"$#{r.metrics.total_inventory_value}"}
+                      color="emerald"
+                    />
+                  <% end %>
+
+                  <%= if r.metrics[:average_price] do %>
+                    <.metric_card
+                      label="Average Price"
+                      value={"$#{r.metrics.average_price}"}
+                      color="purple"
+                    />
+                  <% end %>
+                </.file_result_card>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <%!-- LOG Files Tab --%>
+        <div x-show="tab === 'log'" style="display: none;" x-cloak>
+          <%= if @report.log_count == 0 do %>
+            <.empty_state message="No LOG files were processed" />
+          <% else %>
+            <div class="space-y-4">
+              <%= for result <- Enum.filter(@report.results, fn r -> r.type == :log end) do %>
+                <.file_result_card
+                  :let={r}
+                  result={result}
+                  color="purple"
+                  icon_path="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  grid_layout={false}
+                >
+                  <div class="space-y-4">
+                    <%!-- Total Entries & Critical Errors --%>
+                    <div class="grid grid-cols-2 gap-4">
+                      <%= if r.metrics[:total_entries] do %>
+                        <.metric_card
+                          label="Total Entries"
+                          value={r.metrics.total_entries}
+                          color="purple"
+                        />
+                      <% end %>
+
+                      <%= if r.metrics[:critical_errors_count] do %>
+                        <.metric_card
+                          label="Critical Errors"
+                          value={r.metrics.critical_errors_count}
+                          color="rose"
+                        />
+                      <% end %>
+                    </div>
+
+                    <%!-- Distribution by Level --%>
+                    <%= if r.metrics[:level_distribution] do %>
+                      <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                        <p class="text-xs text-slate-600 font-bold mb-3">
+                          Distribution by Level
+                        </p>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          <%= for {level, data} <- r.metrics.level_distribution do %>
+                            <%= case level do %>
+                              <% "DEBUG" -> %>
+                                <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
+                                  <p class="text-lg">🔍</p>
+                                  <p class="text-xl font-black text-slate-700">{data.count}</p>
+                                  <p class="text-[10px] font-bold text-slate-600 uppercase">
+                                    {level}
+                                  </p>
+                                  <p class="text-xs text-slate-600">{data.percentage}%</p>
+                                </div>
+                              <% "INFO" -> %>
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-2 text-center">
+                                  <p class="text-lg">ℹ️</p>
+                                  <p class="text-xl font-black text-blue-700">{data.count}</p>
+                                  <p class="text-[10px] font-bold text-blue-600 uppercase">
+                                    {level}
+                                  </p>
+                                  <p class="text-xs text-blue-600">{data.percentage}%</p>
+                                </div>
+                              <% "WARN" -> %>
+                                <div class="bg-amber-50 border border-amber-200 rounded-lg p-2 text-center">
+                                  <p class="text-lg">⚠️</p>
+                                  <p class="text-xl font-black text-amber-700">{data.count}</p>
+                                  <p class="text-[10px] font-bold text-amber-600 uppercase">
+                                    {level}
+                                  </p>
+                                  <p class="text-xs text-amber-600">{data.percentage}%</p>
+                                </div>
+                              <% "ERROR" -> %>
+                                <div class="bg-rose-50 border border-rose-200 rounded-lg p-2 text-center">
+                                  <p class="text-lg">❌</p>
+                                  <p class="text-xl font-black text-rose-700">{data.count}</p>
+                                  <p class="text-[10px] font-bold text-rose-600 uppercase">
+                                    {level}
+                                  </p>
+                                  <p class="text-xs text-rose-600">{data.percentage}%</p>
+                                </div>
+                              <% "FATAL" -> %>
+                                <div class="bg-red-50 border border-red-200 rounded-lg p-2 text-center">
+                                  <p class="text-lg">💀</p>
+                                  <p class="text-xl font-black text-red-700">{data.count}</p>
+                                  <p class="text-[10px] font-bold text-red-600 uppercase">
+                                    {level}
+                                  </p>
+                                  <p class="text-xs text-red-600">{data.percentage}%</p>
+                                </div>
+                              <% _ -> %>
+                                <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
+                                  <p class="text-lg">•</p>
+                                  <p class="text-xl font-black text-slate-700">{data.count}</p>
+                                  <p class="text-[10px] font-bold text-slate-600 uppercase">
+                                    {level}
+                                  </p>
+                                  <p class="text-xs text-slate-600">{data.percentage}%</p>
+                                </div>
+                            <% end %>
+                          <% end %>
+                        </div>
+                      </div>
+                    <% end %>
+
+                    <%!-- Components with Errors --%>
+                    <%= if r.metrics[:top_error_components] && length(r.metrics.top_error_components) > 0 do %>
+                      <div class="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                        <p class="text-xs text-amber-600 font-bold mb-2">
+                          Components with Errors
+                        </p>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          <%= for component <- Enum.take(r.metrics.top_error_components, 6) do %>
+                            <div class="bg-white rounded-lg px-3 py-2 border border-amber-200">
+                              <p class="font-bold text-slate-700 text-sm">
+                                {component.component}
+                              </p>
+                              <p class="text-xs text-amber-600">{component.error_count} errors</p>
+                            </div>
+                          <% end %>
+                        </div>
+                      </div>
+                    <% end %>
+
+                    <%!-- Frequent Errors --%>
+                    <%= if r.metrics[:most_frequent_errors] && length(r.metrics.most_frequent_errors) > 0 do %>
+                      <div class="bg-rose-50 rounded-xl p-4 border border-rose-100">
+                        <p class="text-xs text-rose-600 font-bold mb-2">Most Frequent Errors</p>
+                        <div class="space-y-2">
+                          <%= for {error_item, index} <- Enum.with_index(Enum.take(r.metrics.most_frequent_errors, 3), 1) do %>
+                            <div class="bg-white rounded-lg p-3 border border-rose-200">
+                              <div class="flex items-start gap-2">
+                                <span class="bg-rose-100 text-rose-700 font-bold text-xs px-2 py-1 rounded">
+                                  {index}
+                                </span>
+                                <div class="flex-1">
+                                  <p class="text-sm text-slate-700 line-clamp-2">
+                                    {error_item.message}
+                                  </p>
+                                  <p class="text-xs text-rose-600 mt-1">
+                                    {error_item.count} occurrences
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          <% end %>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                </.file_result_card>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <%!-- Summary Tab --%>
+        <div x-show="tab === 'summary'" style="display: none;" x-cloak>
+          <div class="space-y-6">
+            <%!-- Processing Overview --%>
+            <article class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white shadow-lg" aria-label="Processing execution summary">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="bg-slate-700 p-2 rounded-lg">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    />
+                  </svg>
+                </div>
+                <h3 class="text-xl font-bold">Processing Summary</h3>
+              </div>
+
+              <div class="space-y-2 font-mono text-sm">
+                <div class="flex items-center gap-2">
+                  <span class="text-emerald-400 font-bold">[START]</span>
+                  <span class="text-slate-300">
+                    {Calendar.strftime(@report.start_time, "%Y-%m-%d %H:%M:%S")}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-blue-400 font-bold">[MODE]</span>
+                  <span class="text-slate-300">{@report.mode}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-amber-400 font-bold">[FILES]</span>
+                  <span class="text-slate-300">
+                    {@report.total_files} files (CSV: {@report.csv_count}, JSON: {@report.json_count}, XML: {@report.xml_count}, LOG: {@report.log_count})
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-emerald-400 font-bold">[TIME]</span>
+                  <span class="text-slate-300">{@report.total_duration_ms}ms</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-emerald-400 font-bold">[RESULT]</span>
+                  <span class="text-emerald-300">Success: {@report.success_count}</span>
+                  <span class="text-rose-300">Errors: {@report.error_count}</span>
+                  <%= if @report.partial_count > 0 do %>
+                    <span class="text-amber-300">Partial: {@report.partial_count}</span>
+                  <% end %>
+                </div>
+              </div>
+            </article>
+
+            <%!-- File Status Overview --%>
+            <section class="bg-white rounded-2xl border border-slate-200 p-6" aria-label="Individual file status">
+              <h3 class="text-lg font-bold text-slate-800 mb-4">File Status</h3>
+              <div class="space-y-3">
+                <%= for result <- @report.results do %>
+                  <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div class="flex items-center gap-3">
+                      <% type_config = file_type_config(result.type) %>
+                      <span class={"bg-#{type_config.color}-100 text-#{type_config.color}-700 px-3 py-1 rounded-lg text-xs font-bold"}>
+                        {type_config.icon} {type_config.label}
+                      </span>
+                      <span class="font-medium text-slate-700">{result.filename}</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                      <span class="text-xs text-slate-500">
+                        {result.lines_processed} lines • {result.duration_ms}ms
+                      </span>
+                      <% status_config = status_badge_config(result.status) %>
+                      <span class={"bg-#{status_config.color}-100 text-#{status_config.color}-700 px-2 py-1 rounded-full text-xs font-bold"}>
+                        {status_config.icon}
+                      </span>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

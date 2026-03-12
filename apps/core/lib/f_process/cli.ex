@@ -99,9 +99,18 @@ defmodule FProcess.CLI do
 
         IO.puts("\nBENCHMARK SUMMARY")
         IO.puts("Total files: #{Map.get(data, :total_files, execution_report.total_files)}")
-        IO.puts("Sequential: #{Map.get(seq, :duration_ms, 0)} ms (avg #{Map.get(seq, :avg_time_per_file, 0)} ms/file) - Success: #{Map.get(seq, :success_count, 0)}")
-        IO.puts("Parallel:   #{Map.get(par, :duration_ms, 0)} ms (avg #{Map.get(par, :avg_time_per_file, 0)} ms/file) - Success: #{Map.get(par, :success_count, 0)}")
-        IO.puts("Speedup: #{Map.get(comp, :speedup_factor, 0)}x | Time saved: #{Map.get(comp, :time_saved_ms, 0)} ms (#{Map.get(comp, :time_saved_percent, 0)}%)")
+
+        IO.puts(
+          "Sequential: #{Map.get(seq, :duration_ms, 0)} ms (avg #{Map.get(seq, :avg_time_per_file, 0)} ms/file) - Success: #{Map.get(seq, :success_count, 0)}"
+        )
+
+        IO.puts(
+          "Parallel:   #{Map.get(par, :duration_ms, 0)} ms (avg #{Map.get(par, :avg_time_per_file, 0)} ms/file) - Success: #{Map.get(par, :success_count, 0)}"
+        )
+
+        IO.puts(
+          "Speedup: #{Map.get(comp, :speedup_factor, 0)}x | Time saved: #{Map.get(comp, :time_saved_ms, 0)} ms (#{Map.get(comp, :time_saved_percent, 0)}%)"
+        )
 
         if Map.get(data, :skipped) do
           skipped = Map.get(data, :skipped)
@@ -131,7 +140,6 @@ defmodule FProcess.CLI do
         System.halt(1)
     end
   end
-
 
   # ================ Build options map from CLI flags ===========================
   defp build_options(opts) do

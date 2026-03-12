@@ -41,13 +41,13 @@ defmodule FProcess do
   require Logger
 
   @type process_option ::
-    {:mode, :sequential | :parallel} |
-    {:timeout, pos_integer()} |
-    {:max_workers, pos_integer()} |
-    {:max_retries, non_neg_integer()} |
-    {:output_dir, String.t()} |
-    {:benchmark, boolean()} |
-    {:verbose, boolean()}
+          {:mode, :sequential | :parallel}
+          | {:timeout, pos_integer()}
+          | {:max_workers, pos_integer()}
+          | {:max_retries, non_neg_integer()}
+          | {:output_dir, String.t()}
+          | {:benchmark, boolean()}
+          | {:verbose, boolean()}
 
   @type process_result :: {:ok, FProcess.Structs.ExecutionReport.t()} | {:error, String.t()}
 
@@ -101,16 +101,17 @@ defmodule FProcess do
           {:ok, execution_report} ->
             # If there were skipped files, attach them as error FileResults
             if skipped != [] do
-              error_results = Enum.map(skipped, fn
-                {path, reason} when is_binary(reason) ->
-                  p = if is_binary(path) and path != nil, do: path, else: "unknown"
-                  fr = FProcess.Structs.FileResult.new(p, :unknown)
-                  FProcess.Structs.FileResult.error(fr, reason, 0)
+              error_results =
+                Enum.map(skipped, fn
+                  {path, reason} when is_binary(reason) ->
+                    p = if is_binary(path) and path != nil, do: path, else: "unknown"
+                    fr = FProcess.Structs.FileResult.new(p, :unknown)
+                    FProcess.Structs.FileResult.error(fr, reason, 0)
 
-                reason when is_binary(reason) ->
-                  fr = FProcess.Structs.FileResult.new("unknown", :unknown)
-                  FProcess.Structs.FileResult.error(fr, reason, 0)
-              end)
+                  reason when is_binary(reason) ->
+                    fr = FProcess.Structs.FileResult.new("unknown", :unknown)
+                    FProcess.Structs.FileResult.error(fr, reason, 0)
+                end)
 
               # Update report counts and results
               total = execution_report.total_files + length(error_results)
@@ -128,7 +129,8 @@ defmodule FProcess do
               {:ok, execution_report}
             end
 
-          other -> other
+          other ->
+            other
         end
 
       {:error, reason} ->
@@ -183,11 +185,12 @@ defmodule FProcess do
   end
 
   defp print_input_info(input) when is_binary(input) do
-    type = cond do
-      File.dir?(input) -> "Directory"
-      File.regular?(input) -> "Single File"
-      true -> "Path"
-    end
+    type =
+      cond do
+        File.dir?(input) -> "Directory"
+        File.regular?(input) -> "Single File"
+        true -> "Path"
+      end
 
     IO.puts("Input Type:     #{type}")
     IO.puts("Input Path:     #{input}")

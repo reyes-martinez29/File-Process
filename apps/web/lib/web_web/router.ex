@@ -1,4 +1,3 @@
-
 defmodule WebWeb.Router do
   use WebWeb, :router
 
@@ -18,11 +17,18 @@ defmodule WebWeb.Router do
   scope "/", WebWeb do
     pipe_through :browser
 
+    # Rutas tradicionales (mantener)
     get "/", PageController, :home
     post "/upload", PageController, :upload
     get "/results", PageController, :results
     get "/errors", PageController, :errors
     post "/benchmark", PageController, :benchmark_results
+
+    # LiveView routes
+    live "/live/home", PageLive, :home
+    live "/live/results", ResultsLive, :index
+    live "/live/errors", ErrorsLive, :index
+    live "/live/benchmark", BenchmarkLive, :index
   end
 
   # Other scopes may use custom stacks.

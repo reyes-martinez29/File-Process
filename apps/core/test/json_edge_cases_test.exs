@@ -3,7 +3,8 @@ defmodule FProcess.JSONEdgeTest do
 
   alias FProcess.Parsers.JSONParser
 
-  defp tmp_path(suffix), do: Path.join(System.tmp_dir!(), "fproc_json_#{:erlang.system_time()}_#{suffix}")
+  defp tmp_path(suffix),
+    do: Path.join(System.tmp_dir!(), "fproc_json_#{:erlang.system_time()}_#{suffix}")
 
   test "empty json file returns error" do
     path = tmp_path("empty.json")

@@ -25,8 +25,8 @@ defmodule FProcess.Parsers.JSONParser do
   - `{:error, reason}` - Failed to parse or validate
   """
   @spec parse(String.t()) ::
-    {:ok, map()} |
-    {:error, String.t()}
+          {:ok, map()}
+          | {:error, String.t()}
   def parse(file_path) do
     case File.read(file_path) do
       {:ok, content} ->
@@ -55,12 +55,12 @@ defmodule FProcess.Parsers.JSONParser do
     with {:ok, timestamp} <- extract_timestamp(data),
          {:ok, users} <- extract_users(data),
          {:ok, sessions} <- extract_sessions(data) do
-
-      {:ok, %{
-        timestamp: timestamp,
-        users: users,
-        sessions: sessions
-      }}
+      {:ok,
+       %{
+         timestamp: timestamp,
+         users: users,
+         sessions: sessions
+       }}
     end
   end
 
@@ -75,7 +75,8 @@ defmodule FProcess.Parsers.JSONParser do
   defp extract_timestamp(data) do
     case Map.get(data, "timestamp") do
       nil ->
-        {:ok, nil}  # Timestamp is optional
+        # Timestamp is optional
+        {:ok, nil}
 
       timestamp when is_binary(timestamp) ->
         {:ok, timestamp}
@@ -141,7 +142,6 @@ defmodule FProcess.Parsers.JSONParser do
          {:ok, nombre} <- get_required_string(data, "nombre"),
          {:ok, email} <- get_required_string(data, "email"),
          {:ok, activo} <- get_required_boolean(data, "activo") do
-
       ultimo_acceso = Map.get(data, "ultimo_acceso")
 
       user = %User{
@@ -187,7 +187,6 @@ defmodule FProcess.Parsers.JSONParser do
 
   defp parse_session(data, _index) when is_map(data) do
     with {:ok, usuario_id} <- get_required_integer(data, "usuario_id") do
-
       inicio = Map.get(data, "inicio")
       duracion_segundos = Map.get(data, "duracion_segundos")
       paginas_visitadas = Map.get(data, "paginas_visitadas")

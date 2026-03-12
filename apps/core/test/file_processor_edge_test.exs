@@ -17,7 +17,12 @@ defmodule FProcess.FileProcessorEdgeTest do
   test "log with some invalid lines produces partial FileResult" do
     # create a temp log with mixed valid and invalid lines
     path = Path.join(System.tmp_dir!(), "fproc_mixed_log_#{:erlang.system_time()}.log")
-    File.write!(path, "2021-01-01 01:00:00 [INFO] [a] ok\nbad line\n2021-01-01 02:00:00 [ERROR] [a] fail")
+
+    File.write!(
+      path,
+      "2021-01-01 01:00:00 [INFO] [a] ok\nbad line\n2021-01-01 02:00:00 [ERROR] [a] fail"
+    )
+
     res = FileProcessor.process({:log, path}, %{})
     # Implementation may convert parse_errors into lines_failed without keeping errors list,
     # so accept ok but ensure lines_failed is > 0 to indicate partial parsing.

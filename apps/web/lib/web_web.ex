@@ -86,6 +86,8 @@ defmodule WebWeb do
       import Phoenix.HTML
       # Core UI components
       import WebWeb.CoreComponents
+      # Results and Errors components
+      import WebWeb.ResultsComponents
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS

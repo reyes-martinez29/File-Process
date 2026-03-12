@@ -29,9 +29,9 @@ defmodule FProcess.Parsers.LogParser do
   - `{:error, reason}` - File could not be read
   """
   @spec parse(String.t()) ::
-    {:ok, list(LogEntry.t())} |
-    {:partial, list(LogEntry.t()), list({integer(), String.t()})} |
-    {:error, String.t()}
+          {:ok, list(LogEntry.t())}
+          | {:partial, list(LogEntry.t()), list({integer(), String.t()})}
+          | {:error, String.t()}
   def parse(file_path) do
     case File.read(file_path) do
       {:ok, content} ->
@@ -105,7 +105,6 @@ defmodule FProcess.Parsers.LogParser do
   defp build_log_entry(date, hour, minute, second, level, component, message) do
     with :ok <- validate_level(level),
          {:ok, hour_int} <- parse_hour(hour) do
-
       timestamp = "#{date} #{hour}:#{minute}:#{second}"
 
       entry = %LogEntry{

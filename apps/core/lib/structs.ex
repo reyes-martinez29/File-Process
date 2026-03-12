@@ -131,11 +131,12 @@ defmodule FProcess.Structs do
     Mark a FileResult as successful with metrics.
     """
     def success(result, metrics, duration_ms, lines_processed \\ 0) do
-      %{result |
-        status: :ok,
-        metrics: metrics,
-        duration_ms: duration_ms,
-        lines_processed: lines_processed
+      %{
+        result
+        | status: :ok,
+          metrics: metrics,
+          duration_ms: duration_ms,
+          lines_processed: lines_processed
       }
     end
 
@@ -145,11 +146,7 @@ defmodule FProcess.Structs do
     def error(result, errors, duration_ms \\ 0)
 
     def error(result, errors, duration_ms) when is_list(errors) do
-      %{result |
-        status: :error,
-        errors: errors,
-        duration_ms: duration_ms
-      }
+      %{result | status: :error, errors: errors, duration_ms: duration_ms}
     end
 
     def error(result, error, duration_ms) when is_binary(error) do
@@ -160,13 +157,14 @@ defmodule FProcess.Structs do
     Mark a FileResult as partially successful.
     """
     def partial(result, metrics, errors, duration_ms, lines_processed, lines_failed) do
-      %{result |
-        status: :partial,
-        metrics: metrics,
-        errors: errors,
-        duration_ms: duration_ms,
-        lines_processed: lines_processed,
-        lines_failed: lines_failed
+      %{
+        result
+        | status: :partial,
+          metrics: metrics,
+          errors: errors,
+          duration_ms: duration_ms,
+          lines_processed: lines_processed,
+          lines_failed: lines_failed
       }
     end
   end
@@ -228,7 +226,12 @@ defmodule FProcess.Structs do
     Calculate success rate as a percentage.
     """
     def success_rate(%__MODULE__{total_files: 0}), do: 0.0
-    def success_rate(%__MODULE__{total_files: total, success_count: success, partial_count: partial}) do
+
+    def success_rate(%__MODULE__{
+          total_files: total,
+          success_count: success,
+          partial_count: partial
+        }) do
       ((success + partial) / total * 100) |> Float.round(1)
     end
   end

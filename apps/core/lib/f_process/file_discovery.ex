@@ -55,7 +55,7 @@ defmodule FProcess.FileDiscovery do
       {:ok, [{:csv, "data/error/ventas_corrupto.csv"}, ...]}
   """
   @spec normalize(String.t() | list(String.t())) ::
-    {:ok, map()} | {:error, String.t()}
+          {:ok, map()} | {:error, String.t()}
   def normalize(input) when is_binary(input) do
     cond do
       File.dir?(input) ->
@@ -174,7 +174,10 @@ defmodule FProcess.FileDiscovery do
 
         {:error, :unsupported_format} ->
           ext = Path.extname(file_path)
-          {:error, {file_path, "Unsupported file format '#{ext}'. Supported: #{format_supported_extensions()}"}}
+
+          {:error,
+           {file_path,
+            "Unsupported file format '#{ext}'. Supported: #{format_supported_extensions()}"}}
       end
     else
       {:error, {file_path, "File does not exist or is not a regular file"}}

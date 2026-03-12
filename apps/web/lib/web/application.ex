@@ -13,6 +13,8 @@ defmodule Web.Application do
       {Phoenix.PubSub, name: Web.PubSub},
       # Report store with automatic cleanup (prevents memory leaks)
       Web.ReportStore,
+      # Benchmark uploads store with automatic cleanup
+      Web.BenchmarkStore,
       # Start to serve requests, typically the last entry
       WebWeb.Endpoint
     ]

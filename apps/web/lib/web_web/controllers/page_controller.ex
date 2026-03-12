@@ -14,42 +14,28 @@ defmodule WebWeb.PageController do
   end
 
   def benchmark_results(conn, %{"archivos" => archivos}) when is_list(archivos) do
-    # Step 1: Create temporary files with UNIQUE names to avoid OS caching issues
-    # Using timestamp + random suffix ensures each benchmark run uses fresh files
+    # Step 1: Create temporary files with UNIQUE names
     timestamp = System.system_time(:millisecond)
+    benchmark_id = "bench_#{timestamp}_#{:rand.uniform(10000)}"
 
     temp_files =
       Enum.with_index(archivos, fn archivo, idx ->
-        # Create unique filename: timestamp_index_originalname
         unique_name = "#{timestamp}_#{idx}_#{archivo.filename}"
         temp_path = Path.join(System.tmp_dir!(), unique_name)
         File.cp!(archivo.path, temp_path)
-        temp_path
+
+        %{
+          "path" => temp_path,
+          "filename" => archivo.filename,
+          "content_type" => archivo.content_type
+        }
       end)
 
-    # Step 2: Build processing options for benchmark mode
-    opts = [benchmark: true, verbose: false]
+    # Step 2: Store files info in BenchmarkStore for LiveView to access
+    Web.BenchmarkStore.put(benchmark_id, temp_files)
 
-    # Step 3: Process files using FProcess.process_files with benchmark mode
-    # This is the CORRECT way - same as CLI uses
-    resultado = FProcess.process_files(temp_files, opts)
-
-    # Step 4: Clean up temporary files
-    Enum.each(temp_files, &File.rm/1)
-
-    # Step 5: Render benchmark results
-    case resultado do
-      {:ok, reporte} ->
-        # Extract benchmark_data from the execution report
-        benchmark_data = reporte.benchmark_data
-
-        render(conn, :benchmark, data: benchmark_data)
-
-      {:error, razon} ->
-        conn
-        |> put_flash(:error, "Benchmark error: #{razon}")
-        |> redirect(to: ~p"/")
-    end
+    # Step 3: Redirect to LiveView
+    redirect(conn, to: ~p"/live/benchmark?id=#{benchmark_id}")
   end
 
   def upload(conn, %{"archivos" => archivos, "processing_mode" => mode} = params)
@@ -69,6 +55,7 @@ defmodule WebWeb.PageController do
 
       {:error, reason} ->
         Logger.warning("File size validation failed", reason: reason)
+
         conn
         |> put_flash(:error, reason)
         |> render(:home, report: nil)
@@ -139,7 +126,7 @@ defmodule WebWeb.PageController do
         conn
         |> put_session(:report_id, report_id)
         |> put_flash(:info, build_success_message(reporte, length(archivos)))
-        |> render(:results, report: reporte)
+        |> redirect(to: ~p"/live/results?id=#{report_id}")
 
       {:error, razon} ->
         # Log error with context
@@ -212,12 +199,14 @@ defmodule WebWeb.PageController do
   # For parallel mode, extracts and validates max_workers and timeout configuration.
   # Applies safe default values and boundaries to prevent resource exhaustion.
   defp build_processing_options(mode, params) when is_map(params) do
-    base_opts = case mode do
-      "sequential" -> [mode: :sequential]
-      "parallel" -> [mode: :parallel]
-      "benchmark" -> [benchmark: true]
-      _ -> [mode: :parallel]  # Default to parallel if unknown
-    end
+    base_opts =
+      case mode do
+        "sequential" -> [mode: :sequential]
+        "parallel" -> [mode: :parallel]
+        "benchmark" -> [benchmark: true]
+        # Default to parallel if unknown
+        _ -> [mode: :parallel]
+      end
 
     # Add advanced configuration for parallel mode
     if mode == "parallel" do
@@ -310,12 +299,13 @@ defmodule WebWeb.PageController do
   # Returns :ok if all files are within limits, or {:error, message} otherwise.
   defp validate_file_sizes(archivos) do
     # Get file sizes
-    file_sizes = Enum.map(archivos, fn archivo ->
-      case File.stat(archivo.path) do
-        {:ok, %{size: size}} -> {archivo.filename, size}
-        {:error, _} -> {archivo.filename, 0}
-      end
-    end)
+    file_sizes =
+      Enum.map(archivos, fn archivo ->
+        case File.stat(archivo.path) do
+          {:ok, %{size: size}} -> {archivo.filename, size}
+          {:error, _} -> {archivo.filename, 0}
+        end
+      end)
 
     total_size = Enum.reduce(file_sizes, 0, fn {_name, size}, acc -> acc + size end)
 
@@ -329,11 +319,15 @@ defmodule WebWeb.PageController do
       oversized_files != [] ->
         [{filename, size} | _] = oversized_files
         size_mb = Float.round(size / (1024 * 1024), 2)
-        {:error, "File '#{filename}' is too large (#{size_mb} MB). Maximum file size is #{@max_file_size_mb} MB."}
+
+        {:error,
+         "File '#{filename}' is too large (#{size_mb} MB). Maximum file size is #{@max_file_size_mb} MB."}
 
       total_size > @max_total_size_bytes ->
         total_mb = Float.round(total_size / (1024 * 1024), 2)
-        {:error, "Total upload size (#{total_mb} MB) exceeds maximum allowed (#{@max_total_size_mb} MB). Please upload fewer or smaller files."}
+
+        {:error,
+         "Total upload size (#{total_mb} MB) exceeds maximum allowed (#{@max_total_size_mb} MB). Please upload fewer or smaller files."}
 
       true ->
         :ok

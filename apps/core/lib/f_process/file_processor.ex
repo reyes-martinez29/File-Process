@@ -102,7 +102,8 @@ defmodule FProcess.FileProcessor do
     duration_ms = end_time - start_time
 
     result
-    |> Map.delete(:parsed_data)  # Remove temporary parsed data
+    # Remove temporary parsed data
+    |> Map.delete(:parsed_data)
     |> Map.put(:duration_ms, duration_ms)
     |> add_line_counts()
     |> normalize_status()
@@ -116,6 +117,7 @@ defmodule FProcess.FileProcessor do
   defp parse_by_type(:json, path), do: JSONParser.parse(path)
   defp parse_by_type(:log, path), do: LogParser.parse(path)
   defp parse_by_type(:xml, path), do: XMLParser.parse(path)
+
   defp parse_by_type(unknown, _path) do
     {:error, "Unknown file type: #{unknown}"}
   end
@@ -124,6 +126,7 @@ defmodule FProcess.FileProcessor do
   defp calculate_by_type(:json, data), do: JSONMetrics.calculate(data)
   defp calculate_by_type(:log, data), do: LogMetrics.calculate(data)
   defp calculate_by_type(:xml, data), do: XMLMetrics.calculate(data)
+
   defp calculate_by_type(unknown, _data) do
     {:error, "Unknown file type for metrics: #{unknown}"}
   end

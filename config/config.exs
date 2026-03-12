@@ -16,6 +16,11 @@
 # General application configuration
 import Config
 
+# Configure MIME types for file uploads
+config :mime, :types, %{
+  "text/plain" => ["log"]
+}
+
 config :web,
   generators: [timestamp_type: :utc_datetime]
 
