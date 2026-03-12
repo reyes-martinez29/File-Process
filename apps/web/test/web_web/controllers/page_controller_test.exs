@@ -92,9 +92,8 @@ defmodule WebWeb.PageControllerTest do
           "processing_mode" => "sequential"
         })
 
-      html = html_response(conn, 200)
-      # Check for success indicators in the results page
-      assert html =~ "Resumen" || html =~ "Processing" || html =~ "Procesamiento"
+      # Controller now redirects to LiveView results page after successful processing
+      assert redirected_to(conn) =~ "/live/results"
       # Cleanup (file might already be deleted by controller)
       if File.exists?(temp_path), do: File.rm(temp_path)
     end
@@ -177,8 +176,8 @@ defmodule WebWeb.PageControllerTest do
           "processing_mode" => "parallel"
         })
 
-      html = html_response(conn, 200)
-      assert html =~ "Resumen" || html =~ "Results" || html =~ "Procesamiento"
+      # Controller redirects to LiveView after successful processing
+      assert redirected_to(conn) =~ "/live/results"
       if File.exists?(temp_path), do: File.rm(temp_path)
     end
 
@@ -199,8 +198,7 @@ defmodule WebWeb.PageControllerTest do
           "max_workers" => "4"
         })
 
-      html = html_response(conn, 200)
-      assert html =~ "Resumen" || html =~ "Results" || html =~ "Procesamiento"
+      assert redirected_to(conn) =~ "/live/results"
       if File.exists?(temp_path), do: File.rm(temp_path)
     end
 
@@ -221,8 +219,7 @@ defmodule WebWeb.PageControllerTest do
           "timeout" => "5000"
         })
 
-      html = html_response(conn, 200)
-      assert html =~ "Resumen" || html =~ "Results" || html =~ "Procesamiento"
+      assert redirected_to(conn) =~ "/live/results"
       if File.exists?(temp_path), do: File.rm(temp_path)
     end
 
@@ -243,9 +240,8 @@ defmodule WebWeb.PageControllerTest do
           "max_workers" => "0"
         })
 
-      # Should still process successfully (clamped to 1)
-      html = html_response(conn, 200)
-      assert html =~ "Resumen" || html =~ "Results" || html =~ "Procesamiento"
+      # Should still process successfully (clamped to 1) and redirect
+      assert redirected_to(conn) =~ "/live/results"
       if File.exists?(temp_path), do: File.rm(temp_path)
     end
 
@@ -266,9 +262,8 @@ defmodule WebWeb.PageControllerTest do
           "timeout" => "500"
         })
 
-      # Should still process successfully (clamped to 1000)
-      html = html_response(conn, 200)
-      assert html =~ "Resumen" || html =~ "Results" || html =~ "Procesamiento"
+      # Should still process successfully (clamped to 1000) and redirect
+      assert redirected_to(conn) =~ "/live/results"
       if File.exists?(temp_path), do: File.rm(temp_path)
     end
   end
@@ -395,10 +390,8 @@ defmodule WebWeb.PageControllerTest do
           "archivos" => [upload]
         })
 
-      html = html_response(conn, 200)
-      assert html =~ "BENCHMARK"
-      assert html =~ "Sequential"
-      assert html =~ "Parallel"
+      # Controller redirects to LiveView benchmark page after preparing files
+      assert redirected_to(conn) =~ "/live/benchmark"
 
       if File.exists?(temp_path), do: File.rm(temp_path)
     end
