@@ -16,6 +16,7 @@ defmodule WebWeb.PageLive do
       |> assign(:processing, false)
       |> assign(:processing_mode, "sequential")
       |> assign(:show_advanced, false)
+      |> assign(:no_files_error, false)
       |> allow_upload(:archivos,
         accept: ~w(.csv .json .xml .log),
         max_entries: 50,
@@ -35,6 +36,7 @@ defmodule WebWeb.PageLive do
       socket
       |> assign(:processing_mode, mode)
       |> assign(:show_advanced, false)
+      |> assign(:no_files_error, false)
 
     {:noreply, socket}
   end
@@ -44,7 +46,7 @@ defmodule WebWeb.PageLive do
   end
 
   def handle_event("validate", _params, socket) do
-    {:noreply, socket}
+    {:noreply, assign(socket, :no_files_error, false)}
   end
 
   def handle_event("cancel_upload", %{"ref" => ref}, socket) do
@@ -56,7 +58,7 @@ defmodule WebWeb.PageLive do
     entries = socket.assigns.uploads.archivos.entries
 
     if entries == [] do
-      {:noreply, put_flash(socket, :error, "Primero tienes que seleccionar al menos 1 archivo.")}
+      {:noreply, socket |> assign(:no_files_error, true) |> put_flash(:error, "Primero tienes que seleccionar al menos 1 archivo.")}
     else
       socket    = assign(socket, :processing, true)
       timestamp = System.system_time(:millisecond)
@@ -107,6 +109,7 @@ defmodule WebWeb.PageLive do
               socket =
                 socket
                 |> assign(:processing, false)
+                |> push_event("processing-complete", %{})
                 |> push_navigate(to: ~p"/live/results?id=#{report_id}")
 
               {:noreply, socket}
@@ -130,7 +133,7 @@ defmodule WebWeb.PageLive do
     entries = socket.assigns.uploads.archivos.entries
 
     if entries == [] do
-      {:noreply, put_flash(socket, :error, "Primero tienes que seleccionar al menos 1 archivo.")}
+      {:noreply, socket |> assign(:no_files_error, true) |> put_flash(:error, "Primero tienes que seleccionar al menos 1 archivo.")}
     else
       socket    = assign(socket, :processing, true)
       timestamp = System.system_time(:millisecond)

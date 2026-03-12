@@ -257,25 +257,60 @@
                Enum.any?(@uploads.archivos.entries, &(upload_errors(@uploads.archivos, &1) != [])) or
                @uploads.archivos.errors != []
           %>
-          <button
-            type="submit"
-            form="upload-form"
-            disabled={submit_disabled}
-            class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white px-8 py-3 rounded-2xl font-bold transition-all shadow-xl shadow-indigo-100 flex items-center gap-2 group"
-          >
-            <%= if @processing do %>
-              <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-              </svg>
-              Procesando...
-            <% else %>
-              Comenzar Procesamiento
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
+
+          <%!-- Barra de progreso — visible solo mientras procesa --%>
+          <%= if @processing do %>
+            <div class="w-full mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-indigo-700">Analizando archivos...</span>
+                <span class="text-xs text-indigo-400 animate-pulse">Por favor espera</span>
+              </div>
+              <div class="w-full h-2.5 bg-indigo-100 rounded-full overflow-hidden">
+                <div class="h-full bg-indigo-500 rounded-full animate-[progress_1.8s_ease-in-out_infinite]"
+                     style="width: 100%; animation: indeterminate 1.8s ease-in-out infinite; transform-origin: left;">
+                </div>
+              </div>
+              <style>
+                @keyframes indeterminate {
+                  0%   { transform: translateX(-100%) scaleX(0.4); }
+                  50%  { transform: translateX(0%)    scaleX(0.6); }
+                  100% { transform: translateX(100%)  scaleX(0.4); }
+                }
+              </style>
+            </div>
+          <% end %>
+
+          <div class="flex flex-col items-end gap-2 w-full">
+            <button
+              type="submit"
+              form="upload-form"
+              disabled={submit_disabled}
+              class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white px-8 py-3 rounded-2xl font-bold transition-all shadow-xl shadow-indigo-100 flex items-center gap-2 group"
+            >
+              <%= if @processing do %>
+                <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                Procesando...
+              <% else %>
+                Comenzar Procesamiento
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              <% end %>
+            </button>
+
+            <%!-- Mensaje inline cuando no hay archivos seleccionados --%>
+            <%= if @no_files_error and @uploads.archivos.entries == [] do %>
+              <div class="flex items-center gap-1.5 text-rose-500 animate-pulse">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span class="text-xs font-semibold">Selecciona al menos un archivo antes de continuar</span>
+              </div>
             <% end %>
-          </button>
+          </div>
         </div>
       </section>
     </div>
@@ -402,4 +437,7 @@
       </section>
     </aside>
   </main>
+
+  <%!-- Hook JS: reproduce sonido cuando el procesamiento termina --%>
+  <div id="sound-hook" phx-hook="ProcessingComplete" class="hidden" aria-hidden="true"></div>
 </div>
