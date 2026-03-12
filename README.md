@@ -10,7 +10,7 @@ FProcess is an Elixir **Umbrella** application that processes multiple file type
 
 - **Parallel Processing**: Leverages Elixir/BEAM concurrency to process files simultaneously
 - **Multiple Formats**: Native support for CSV, JSON, XML, and LOG files
-- **Modern Web Interface**: Elegant UI built with Phoenix controllers and Tailwind CSS
+- **Modern Web Interface**: Interactive UI built with Phoenix LiveView, HEEx, and Tailwind CSS
 - **Robust CLI**: Command-line tool for automation
 - **Benchmark Mode**: Compares sequential vs parallel performance
 - **Detailed Analysis**: Format-specific metrics extraction
@@ -67,7 +67,7 @@ f_process/
 
 ### Backend
 - **Elixir 1.19.4**: Functional and concurrent language
-- **Phoenix 1.8.3**: Modern web framework (traditional MVC architecture)
+- **Phoenix 1.8.3 + LiveView 1.1**: Modern web framework with server-rendered real-time UI
 - **ETS (Erlang Term Storage)**: In-memory storage for sessions
 - **Bandit**: High-performance HTTP/2 server
 
@@ -128,25 +128,69 @@ The **web** application is a thin wrapper around Core:
 apps/web/
 ├── lib/
 │   ├── web/
-│   │   └── application.ex          # Initialization (creates ETS table)
+│   │   ├── application.ex          # OTP supervision tree
+│   │   ├── report_store.ex         # ETS store for processing reports
+│   │   └── benchmark_store.ex      # ETS store for benchmark temp uploads
 │   └── web_web/
+│       ├── live/
+│       │   ├── page_live.ex
+│       │   ├── page_live/home_live.html.heex
+│       │   ├── results_live.ex
+│       │   ├── results_live.html.heex
+│       │   ├── errors_live.ex
+│       │   ├── errors_live.html.heex
+│       │   ├── benchmark_live.ex
+│       │   ├── benchmark_live.html.heex
+│       │   └── shared_helpers.ex
 │       ├── controllers/
-│       │   ├── page_controller.ex  # Route logic and actions
+│       │   ├── page_controller.ex  # Legacy/compatibility routes
 │       │   └── page_html/
-│       │       ├── home.html.heex      # Upload page
-│       │       ├── results.html.heex   # Detailed results
-│       │       ├── errors.html.heex    # Error page
-│       │       └── benchmark.html.heex # Benchmark view
+│       │       ├── home.html.heex
+│       │       ├── results.html.heex
+│       │       ├── errors.html.heex
+│       │       └── benchmark.html.heex
 │       ├── components/
-│       │   ├── core_components.ex  # Reusable components
-│       │   └── layouts.ex          # Application layouts
-│       └── router.ex               # Route definitions
+│       │   ├── core_components.ex
+│       │   ├── layouts.ex
+│       │   └── results_components.ex
+│       └── router.ex
 └── assets/
     ├── css/
-    │   └── app.css                 # Tailwind styles
+  │   └── app.css
     └── js/
-        └── app.js                  # Minimal JavaScript
+    └── app.js
 ```
+
+### LiveView Integration (Current)
+
+The project is already integrated with Phoenix LiveView for the main processing flow:
+
+- `PageLive` (`/live/home`): file upload, mode selection (sequential/parallel/benchmark), and processing trigger.
+- `ResultsLive` (`/live/results?id=...`): report visualization from ETS.
+- `ErrorsLive` (`/live/errors?id=...`): filtered error/partial results view.
+- `BenchmarkLive` (`/live/benchmark?id=...`): sequential vs parallel benchmark execution.
+
+State and temporary data are managed in-memory with:
+
+- `Web.ReportStore` (ETS-backed report store with TTL cleanup).
+- `Web.BenchmarkStore` (temporary benchmark uploads with cleanup).
+
+Note: some controller routes are still present for compatibility, but the active UX path is based on LiveView screens.
+
+### Current Web Architecture (LiveView-first)
+
+Current web architecture is centered on LiveView and keeps business logic in `apps/core`:
+
+1. User enters `/live/home` and uploads files.
+2. `PageLive` validates upload constraints and processing options.
+3. `FProcess.process_files/2` executes in core (`sequential`, `parallel`, or `benchmark`).
+4. Reports are stored in ETS through `Web.ReportStore`.
+5. UI navigates to `/live/results?id=...` and `/live/errors?id=...`.
+6. Benchmark flow uses `Web.BenchmarkStore` and `/live/benchmark?id=...`.
+
+This keeps the boundary clean:
+- `core`: processing engine and metrics extraction.
+- `web`: LiveView state/events, routing, and UI rendering.
 
 ---
 
@@ -585,9 +629,11 @@ This project is open source under the MIT license.
 
 ## Acknowledgments
 
-- **Phoenix Framework** for excellent documentation
-- **Elixir Community** for robust libraries
-- **Tailwind CSS** for making design faster and maintainable
+- **Elixir and Erlang/OTP teams** for the BEAM runtime and concurrency model
+- **Phoenix Framework and Phoenix LiveView teams** for real-time web architecture patterns
+- **Elixir Community** for high-quality packages and practical guidance
+- **Tailwind CSS** for rapid, maintainable UI styling
+- **Open-source maintainers** of NimbleCSV, Jason, SweetXml, and Bandit
 
 ---
 
