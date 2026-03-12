@@ -44,7 +44,10 @@ defmodule WebWeb.BenchmarkLive do
 
     Task.start(fn ->
       try do
-        Logger.info("Starting benchmark execution", benchmark_id: benchmark_id, file_count: length(files))
+        Logger.info("Starting benchmark execution",
+          benchmark_id: benchmark_id,
+          file_count: length(files)
+        )
 
         # Extract file paths from file info maps
         temp_files = Enum.map(files, & &1["path"])
@@ -63,6 +66,7 @@ defmodule WebWeb.BenchmarkLive do
       rescue
         e in File.Error ->
           error_msg = "File operation failed: #{Exception.message(e)}"
+
           Logger.error("Benchmark file error",
             benchmark_id: benchmark_id,
             error: error_msg,
@@ -76,6 +80,7 @@ defmodule WebWeb.BenchmarkLive do
 
         e ->
           error_msg = "Internal processing error: #{Exception.message(e)}"
+
           Logger.error("Benchmark processing crashed",
             benchmark_id: benchmark_id,
             error: Exception.format(:error, e, __STACKTRACE__)

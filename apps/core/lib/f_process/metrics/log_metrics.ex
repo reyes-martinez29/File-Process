@@ -80,7 +80,8 @@ defmodule FProcess.Metrics.LogMetrics do
     |> Enum.take(top_n)
     |> Enum.map(fn {message, count} ->
       %{
-        message: String.slice(message, 0..100),  # Truncate long messages
+        # Truncate long messages
+        message: String.slice(message, 0..100),
         count: count
       }
     end)

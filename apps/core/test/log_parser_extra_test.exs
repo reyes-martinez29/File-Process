@@ -3,7 +3,8 @@ defmodule FProcess.LogParserExtraTest do
 
   alias FProcess.Parsers.LogParser
 
-  defp tmp_path(suffix), do: Path.join(System.tmp_dir!(), "fproc_log_#{:erlang.system_time()}_#{suffix}")
+  defp tmp_path(suffix),
+    do: Path.join(System.tmp_dir!(), "fproc_log_#{:erlang.system_time()}_#{suffix}")
 
   test "empty log returns error" do
     path = tmp_path("empty.log")
@@ -14,7 +15,12 @@ defmodule FProcess.LogParserExtraTest do
 
   test "invalid format line yields partial when mixed with valid lines" do
     path = tmp_path("partial.log")
-    File.write!(path, "2021-01-01 12:00:00 [INFO] [svc] OK\nthis line is bad\n2021-01-01 12:01:00 [ERROR] [svc] Fail")
+
+    File.write!(
+      path,
+      "2021-01-01 12:00:00 [INFO] [svc] OK\nthis line is bad\n2021-01-01 12:01:00 [ERROR] [svc] Fail"
+    )
+
     assert {:partial, entries, errors} = LogParser.parse(path)
     assert length(entries) == 2
     assert length(errors) == 1

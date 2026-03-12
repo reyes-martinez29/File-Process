@@ -54,19 +54,22 @@ defmodule WebWeb.PageLive do
   end
 
   def handle_event("process_files", params, socket) do
-    mode    = socket.assigns.processing_mode
+    mode = socket.assigns.processing_mode
     entries = socket.assigns.uploads.archivos.entries
 
     if entries == [] do
-      {:noreply, socket |> assign(:no_files_error, true) |> put_flash(:error, "Primero tienes que seleccionar al menos 1 archivo.")}
+      {:noreply,
+       socket
+       |> assign(:no_files_error, true)
+       |> put_flash(:error, "Primero tienes que seleccionar al menos 1 archivo.")}
     else
-      socket    = assign(socket, :processing, true)
+      socket = assign(socket, :processing, true)
       timestamp = System.system_time(:millisecond)
 
       temp_files =
         consume_uploaded_entries(socket, :archivos, fn %{path: path}, entry ->
           unique_name = "#{timestamp}_#{entry.client_name}"
-          temp_path   = Path.join(System.tmp_dir!(), unique_name)
+          temp_path = Path.join(System.tmp_dir!(), unique_name)
           File.cp!(path, temp_path)
           {:ok, temp_path}
         end)
@@ -81,9 +84,9 @@ defmodule WebWeb.PageLive do
           Logger.metadata(request_id: request_id, file_count: length(temp_files))
           Logger.info("LiveView file processing started", mode: mode)
 
-          opts       = build_processing_options(mode, params)
+          opts = build_processing_options(mode, params)
           start_time = System.monotonic_time(:millisecond)
-          resultado  = FProcess.process_files(temp_files, opts)
+          resultado = FProcess.process_files(temp_files, opts)
           duration_ms = System.monotonic_time(:millisecond) - start_time
 
           Enum.each(temp_files, &File.rm/1)
@@ -123,7 +126,8 @@ defmodule WebWeb.PageLive do
                 %{reason: razon, request_id: request_id}
               )
 
-              {:noreply, socket |> assign(:processing, false) |> put_flash(:error, "Error: #{razon}")}
+              {:noreply,
+               socket |> assign(:processing, false) |> put_flash(:error, "Error: #{razon}")}
           end
       end
     end
@@ -133,9 +137,12 @@ defmodule WebWeb.PageLive do
     entries = socket.assigns.uploads.archivos.entries
 
     if entries == [] do
-      {:noreply, socket |> assign(:no_files_error, true) |> put_flash(:error, "Primero tienes que seleccionar al menos 1 archivo.")}
+      {:noreply,
+       socket
+       |> assign(:no_files_error, true)
+       |> put_flash(:error, "Primero tienes que seleccionar al menos 1 archivo.")}
     else
-      socket    = assign(socket, :processing, true)
+      socket = assign(socket, :processing, true)
       timestamp = System.system_time(:millisecond)
       benchmark_id = "bench_#{System.unique_integer([:positive, :monotonic])}"
 
@@ -143,7 +150,7 @@ defmodule WebWeb.PageLive do
       temp_files =
         consume_uploaded_entries(socket, :archivos, fn %{path: path}, entry ->
           unique_name = "#{timestamp}_#{System.unique_integer([:positive])}_#{entry.client_name}"
-          temp_path   = Path.join(System.tmp_dir!(), unique_name)
+          temp_path = Path.join(System.tmp_dir!(), unique_name)
           File.cp!(path, temp_path)
 
           file_info = %{
@@ -182,10 +189,12 @@ defmodule WebWeb.PageLive do
   # ============================================================================
 
   # Traduce los átomos de error de Phoenix LiveView uploads a mensajes legibles
-  defp upload_error_message(:too_large),      do: "El archivo supera el tamaño máximo permitido (#{@max_file_size_mb} MB)."
+  defp upload_error_message(:too_large),
+    do: "El archivo supera el tamaño máximo permitido (#{@max_file_size_mb} MB)."
+
   defp upload_error_message(:too_many_files), do: "Se superó el número máximo de archivos (50)."
-  defp upload_error_message(:not_accepted),   do: "Formato no permitido. Solo CSV, JSON, XML y LOG."
-  defp upload_error_message(_),               do: "Error desconocido al subir el archivo."
+  defp upload_error_message(:not_accepted), do: "Formato no permitido. Solo CSV, JSON, XML y LOG."
+  defp upload_error_message(_), do: "Error desconocido al subir el archivo."
 
   # ============================================================================
   # Private Helpers
@@ -195,8 +204,8 @@ defmodule WebWeb.PageLive do
     base_opts =
       case mode do
         "sequential" -> [mode: :sequential]
-        "parallel"   -> [mode: :parallel]
-        _            -> [mode: :parallel]
+        "parallel" -> [mode: :parallel]
+        _ -> [mode: :parallel]
       end
 
     if mode == "parallel" do
@@ -215,7 +224,7 @@ defmodule WebWeb.PageLive do
 
       value when is_binary(value) ->
         max_allowed = System.schedulers_online() * 2
-        workers     = validate_integer(value, min: 1, max: max_allowed, default: 8)
+        workers = validate_integer(value, min: 1, max: max_allowed, default: 8)
         Keyword.put(opts, :max_workers, workers)
 
       _ ->
@@ -238,15 +247,15 @@ defmodule WebWeb.PageLive do
   end
 
   defp validate_integer(value, opts) do
-    min     = Keyword.fetch!(opts, :min)
-    max     = Keyword.fetch!(opts, :max)
+    min = Keyword.fetch!(opts, :min)
+    max = Keyword.fetch!(opts, :max)
     default = Keyword.fetch!(opts, :default)
 
     case Integer.parse(value) do
       {num, _} when num >= min and num <= max -> num
-      {num, _} when num < min                -> min
-      {num, _} when num > max                -> max
-      :error                                 -> default
+      {num, _} when num < min -> min
+      {num, _} when num > max -> max
+      :error -> default
     end
   end
 
@@ -255,7 +264,7 @@ defmodule WebWeb.PageLive do
       Enum.map(paths, fn path ->
         case File.stat(path) do
           {:ok, %{size: size}} -> size
-          {:error, _}          -> 0
+          {:error, _} -> 0
         end
       end)
 
@@ -263,7 +272,9 @@ defmodule WebWeb.PageLive do
 
     if total > @max_total_size_bytes do
       total_mb = Float.round(total / (1024 * 1024), 2)
-      {:error, "Tamaño total (#{total_mb} MB) supera el máximo permitido (#{@max_total_size_mb} MB)."}
+
+      {:error,
+       "Tamaño total (#{total_mb} MB) supera el máximo permitido (#{@max_total_size_mb} MB)."}
     else
       :ok
     end

@@ -3,17 +3,20 @@ defmodule FProcess.XMLExtraTest do
 
   alias FProcess.Parsers.XMLParser
 
-  defp tmp_path(suffix), do: Path.join(System.tmp_dir!(), "fproc_xml_#{:erlang.system_time()}_#{suffix}")
+  defp tmp_path(suffix),
+    do: Path.join(System.tmp_dir!(), "fproc_xml_#{:erlang.system_time()}_#{suffix}")
 
   test "empty xml returns error or raises" do
     path = tmp_path("empty.xml")
     File.write!(path, "")
+
     try do
       res = XMLParser.parse(path)
       assert match?({:error, _}, res)
     catch
       :exit, _ -> assert true
     end
+
     File.rm(path)
   end
 
@@ -24,6 +27,7 @@ defmodule FProcess.XMLExtraTest do
       <products></products>
     </catalog>
     """
+
     path = tmp_path("noproducts.xml")
     File.write!(path, content)
     assert {:ok, data} = XMLParser.parse(path)
@@ -34,12 +38,14 @@ defmodule FProcess.XMLExtraTest do
   test "malformed xml returns error or raises" do
     path = tmp_path("bad.xml")
     File.write!(path, "<notclosed>")
+
     try do
       res = XMLParser.parse(path)
       assert match?({:error, _}, res)
     catch
       :exit, _ -> assert true
     end
+
     File.rm(path)
   end
 end

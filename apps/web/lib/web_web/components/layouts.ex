@@ -112,7 +112,7 @@ defmodule WebWeb.Layouts do
         </div>
       </div>
       <nav class="flex gap-4">
-        <%= render_slot(@nav_actions) %>
+        {render_slot(@nav_actions)}
       </nav>
     </header>
     """

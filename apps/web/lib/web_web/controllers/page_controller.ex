@@ -55,6 +55,7 @@ defmodule WebWeb.PageController do
 
       {:error, reason} ->
         Logger.warning("File size validation failed", reason: reason)
+
         conn
         |> put_flash(:error, reason)
         |> render(:home, report: nil)
@@ -198,12 +199,14 @@ defmodule WebWeb.PageController do
   # For parallel mode, extracts and validates max_workers and timeout configuration.
   # Applies safe default values and boundaries to prevent resource exhaustion.
   defp build_processing_options(mode, params) when is_map(params) do
-    base_opts = case mode do
-      "sequential" -> [mode: :sequential]
-      "parallel" -> [mode: :parallel]
-      "benchmark" -> [benchmark: true]
-      _ -> [mode: :parallel]  # Default to parallel if unknown
-    end
+    base_opts =
+      case mode do
+        "sequential" -> [mode: :sequential]
+        "parallel" -> [mode: :parallel]
+        "benchmark" -> [benchmark: true]
+        # Default to parallel if unknown
+        _ -> [mode: :parallel]
+      end
 
     # Add advanced configuration for parallel mode
     if mode == "parallel" do
@@ -296,12 +299,13 @@ defmodule WebWeb.PageController do
   # Returns :ok if all files are within limits, or {:error, message} otherwise.
   defp validate_file_sizes(archivos) do
     # Get file sizes
-    file_sizes = Enum.map(archivos, fn archivo ->
-      case File.stat(archivo.path) do
-        {:ok, %{size: size}} -> {archivo.filename, size}
-        {:error, _} -> {archivo.filename, 0}
-      end
-    end)
+    file_sizes =
+      Enum.map(archivos, fn archivo ->
+        case File.stat(archivo.path) do
+          {:ok, %{size: size}} -> {archivo.filename, size}
+          {:error, _} -> {archivo.filename, 0}
+        end
+      end)
 
     total_size = Enum.reduce(file_sizes, 0, fn {_name, size}, acc -> acc + size end)
 
@@ -315,11 +319,15 @@ defmodule WebWeb.PageController do
       oversized_files != [] ->
         [{filename, size} | _] = oversized_files
         size_mb = Float.round(size / (1024 * 1024), 2)
-        {:error, "File '#{filename}' is too large (#{size_mb} MB). Maximum file size is #{@max_file_size_mb} MB."}
+
+        {:error,
+         "File '#{filename}' is too large (#{size_mb} MB). Maximum file size is #{@max_file_size_mb} MB."}
 
       total_size > @max_total_size_bytes ->
         total_mb = Float.round(total_size / (1024 * 1024), 2)
-        {:error, "Total upload size (#{total_mb} MB) exceeds maximum allowed (#{@max_total_size_mb} MB). Please upload fewer or smaller files."}
+
+        {:error,
+         "Total upload size (#{total_mb} MB) exceeds maximum allowed (#{@max_total_size_mb} MB). Please upload fewer or smaller files."}
 
       true ->
         :ok

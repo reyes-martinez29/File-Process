@@ -25,21 +25,36 @@ defmodule FProcess.CSVCasesTest do
 
   test "invalid date in row returns error" do
     path = tmp_path("bad_date.csv")
-    File.write!(path, "fecha,producto,categoria,precio_unitario,cantidad,descuento\nnot-a-date,Prod,Cat,10.0,1,0")
+
+    File.write!(
+      path,
+      "fecha,producto,categoria,precio_unitario,cantidad,descuento\nnot-a-date,Prod,Cat,10.0,1,0"
+    )
+
     assert {:error, _} = CSVParser.parse(path)
     File.rm(path)
   end
 
   test "negative price returns error" do
     path = tmp_path("neg_price.csv")
-    File.write!(path, "fecha,producto,categoria,precio_unitario,cantidad,descuento\n2020-01-01,Prod,Cat,-5.0,1,0")
+
+    File.write!(
+      path,
+      "fecha,producto,categoria,precio_unitario,cantidad,descuento\n2020-01-01,Prod,Cat,-5.0,1,0"
+    )
+
     assert {:error, _} = CSVParser.parse(path)
     File.rm(path)
   end
 
   test "discount > 100 returns error" do
     path = tmp_path("bad_discount.csv")
-    File.write!(path, "fecha,producto,categoria,precio_unitario,cantidad,descuento\n2020-01-01,Prod,Cat,10.0,1,150")
+
+    File.write!(
+      path,
+      "fecha,producto,categoria,precio_unitario,cantidad,descuento\n2020-01-01,Prod,Cat,10.0,1,150"
+    )
+
     assert {:error, _} = CSVParser.parse(path)
     File.rm(path)
   end

@@ -80,14 +80,16 @@ defmodule FProcess.Parsers.XMLParser do
   # ============================================================================
 
   defp extract_metadata(doc) do
-    generated = doc
+    generated =
+      doc
       |> xpath(~x"//metadata/generated/text()"s)
       |> case do
         "" -> nil
         value -> value
       end
 
-    source = doc
+    source =
+      doc
       |> xpath(~x"//metadata/source/text()"s)
       |> case do
         "" -> nil

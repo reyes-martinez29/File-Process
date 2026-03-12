@@ -42,37 +42,39 @@ defmodule FProcess.Core do
 
     start_time = DateTime.utc_now()
 
-    {results, benchmark_data, duration_ms} = if is_benchmark do
-      {results, bench_data} = execute_benchmark(classified_files, config)
-      # Use parallel duration as the "official" time for benchmark
-      duration = get_in(bench_data, [:parallel, :duration_ms]) || 0
-      {results, bench_data, duration}
-    else
-      print_processing_header(mode, length(classified_files))
+    {results, benchmark_data, duration_ms} =
+      if is_benchmark do
+        {results, bench_data} = execute_benchmark(classified_files, config)
+        # Use parallel duration as the "official" time for benchmark
+        duration = get_in(bench_data, [:parallel, :duration_ms]) || 0
+        {results, bench_data, duration}
+      else
+        print_processing_header(mode, length(classified_files))
 
-      # Measure only the execution mode (consistent with benchmark)
-      start_monotonic = System.monotonic_time(:millisecond)
+        # Measure only the execution mode (consistent with benchmark)
+        start_monotonic = System.monotonic_time(:millisecond)
 
-      results = execute_mode(mode, classified_files, config)
+        results = execute_mode(mode, classified_files, config)
 
-      end_monotonic = System.monotonic_time(:millisecond)
+        end_monotonic = System.monotonic_time(:millisecond)
 
-      duration = end_monotonic - start_monotonic
+        duration = end_monotonic - start_monotonic
 
-      {results, nil, duration}
-    end
+        {results, nil, duration}
+      end
 
     # Build execution report (use :benchmark mode label when benchmarking)
     report_mode = if Keyword.get(opts, :benchmark, false), do: :benchmark, else: mode
 
-    execution_report = build_execution_report(
-      results,
-      report_mode,
-      start_time,
-      duration_ms,
-      classified_files,
-      benchmark_data
-    )
+    execution_report =
+      build_execution_report(
+        results,
+        report_mode,
+        start_time,
+        duration_ms,
+        classified_files,
+        benchmark_data
+      )
 
     # Print summary
     print_processing_summary(execution_report)
@@ -123,7 +125,14 @@ defmodule FProcess.Core do
   # Private Functions - Report Building
   # ============================================================================
 
-  defp build_execution_report(results, mode, start_time, duration_ms, classified_files, benchmark_data) do
+  defp build_execution_report(
+         results,
+         mode,
+         start_time,
+         duration_ms,
+         classified_files,
+         benchmark_data
+       ) do
     directory = extract_directory(classified_files)
     type_counts = count_by_type(results)
     status_counts = count_by_status(results)

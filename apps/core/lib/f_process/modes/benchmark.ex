@@ -15,9 +15,9 @@ defmodule FProcess.Modes.Benchmark do
   @doc """
   Run benchmark comparison and return results in ExecutionReport format.
   """
-    alias FProcess.Structs.FileResult
+  alias FProcess.Structs.FileResult
 
-    @spec run(classified_files(), config()) :: {list(FileResult.t()), map()}
+  @spec run(classified_files(), config()) :: {list(FileResult.t()), map()}
   def run(classified_files, config \\ %{})
 
   def run([], _config) do
@@ -34,31 +34,37 @@ defmodule FProcess.Modes.Benchmark do
     Logger.info("Running both sequential and parallel modes...\n")
 
     # Convert config to map and add show_progress: false
-    benchmark_config = config
+    benchmark_config =
+      config
       |> Enum.into(%{})
       |> Map.put(:show_progress, false)
 
     # Run sequential mode
     Logger.info("--- Sequential Mode ---")
-    {seq_time, seq_results, seq_mem_kb} = time_execution(fn ->
-      Sequential.run(classified_files, benchmark_config)
-    end)
+
+    {seq_time, seq_results, seq_mem_kb} =
+      time_execution(fn ->
+        Sequential.run(classified_files, benchmark_config)
+      end)
 
     Logger.info("\n--- Parallel Mode ---")
-    {par_time, par_results, par_mem_kb} = time_execution(fn ->
-      Parallel.run(classified_files, benchmark_config)
-    end)
+
+    {par_time, par_results, par_mem_kb} =
+      time_execution(fn ->
+        Parallel.run(classified_files, benchmark_config)
+      end)
 
     # Build comparison report
-    benchmark_data = build_benchmark_data(
-      classified_files,
-      seq_time,
-      seq_results,
-      seq_mem_kb,
-      par_time,
-      par_results,
-      par_mem_kb
-    )
+    benchmark_data =
+      build_benchmark_data(
+        classified_files,
+        seq_time,
+        seq_results,
+        seq_mem_kb,
+        par_time,
+        par_results,
+        par_mem_kb
+      )
 
     # Print comparison
     print_benchmark_results(benchmark_data)
@@ -91,7 +97,15 @@ defmodule FProcess.Modes.Benchmark do
   # Private Functions - Report Building
   # ============================================================================
 
-  defp build_benchmark_data(files, seq_time, seq_results, seq_mem_kb, par_time, par_results, par_mem_kb) do
+  defp build_benchmark_data(
+         files,
+         seq_time,
+         seq_results,
+         seq_mem_kb,
+         par_time,
+         par_results,
+         par_mem_kb
+       ) do
     speedup = if par_time > 0, do: seq_time / par_time, else: 0.0
 
     %{
@@ -152,9 +166,16 @@ defmodule FProcess.Modes.Benchmark do
 
     Logger.info("\nComparison:")
     Logger.info("  Speedup:         #{data.comparison.speedup_factor}x")
-    Logger.info("  Time saved:      #{data.comparison.time_saved_ms}ms (#{data.comparison.time_saved_percent}%)")
+
+    Logger.info(
+      "  Time saved:      #{data.comparison.time_saved_ms}ms (#{data.comparison.time_saved_percent}%)"
+    )
+
     Logger.info("  Winner:          #{format_mode(data.comparison.faster_mode)}")
-    Logger.info("  Memory (seq vs par): #{Float.round(data.sequential.memory_kb / 1024, 3)} MB vs #{Float.round(data.parallel.memory_kb / 1024, 3)} MB")
+
+    Logger.info(
+      "  Memory (seq vs par): #{Float.round(data.sequential.memory_kb / 1024, 3)} MB vs #{Float.round(data.parallel.memory_kb / 1024, 3)} MB"
+    )
 
     print_verdict(data.comparison.speedup_factor)
 

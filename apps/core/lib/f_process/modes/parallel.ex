@@ -45,7 +45,9 @@ defmodule FProcess.Modes.Parallel do
     max_workers = Map.get(config, :max_workers, 8)
     timeout = Map.get(config, :timeout, 30_000)
 
-    Logger.info("Parallel mode: Processing #{total} files (max #{max_workers} concurrent workers)...\n")
+    Logger.info(
+      "Parallel mode: Processing #{total} files (max #{max_workers} concurrent workers)...\n"
+    )
 
     # Show progress if enabled
     if Map.get(config, :show_progress, true) do
@@ -53,28 +55,30 @@ defmodule FProcess.Modes.Parallel do
     end
 
     # Process files with controlled concurrency using Task.async_stream
-    results = classified_files
-    |> Task.async_stream(
-      fn file -> process_with_retry(file, config) end,
-      max_concurrency: max_workers,
-      timeout: timeout,
-      on_timeout: :kill_task
-    )
-    |> Enum.with_index(1)
-    |> Enum.map(fn {result, index} ->
-      # Update progress
-      if Map.get(config, :show_progress, true) do
-        Progress.update(index, total)
-      end
+    results =
+      classified_files
+      |> Task.async_stream(
+        fn file -> process_with_retry(file, config) end,
+        max_concurrency: max_workers,
+        timeout: timeout,
+        on_timeout: :kill_task
+      )
+      |> Enum.with_index(1)
+      |> Enum.map(fn {result, index} ->
+        # Update progress
+        if Map.get(config, :show_progress, true) do
+          Progress.update(index, total)
+        end
 
-      # Handle result
-      case result do
-        {:ok, file_result} ->
-          file_result
-        {:exit, reason} ->
-          create_crash_result(classified_files, index, reason)
-      end
-    end)
+        # Handle result
+        case result do
+          {:ok, file_result} ->
+            file_result
+
+          {:exit, reason} ->
+            create_crash_result(classified_files, index, reason)
+        end
+      end)
 
     # Stop progress indicator
     if Map.get(config, :show_progress, true) do
@@ -105,14 +109,18 @@ defmodule FProcess.Modes.Parallel do
   end
 
   defp retryable_error?(%FileResult{errors: errors}) when is_list(errors) do
-    transient_re = ~r/failed to read|timeout|timed out|processing timeout|worker process crashed|killed|exit:/
+    transient_re =
+      ~r/failed to read|timeout|timed out|processing timeout|worker process crashed|killed|exit:/
+
     validation_re = ~r/validation|invalid|invalid json|csv validation/i
 
     Enum.any?(errors, fn
       msg when is_binary(msg) ->
         lowered = String.downcase(msg)
         String.match?(lowered, transient_re) and not String.match?(lowered, validation_re)
-      _ -> false
+
+      _ ->
+        false
     end)
   end
 

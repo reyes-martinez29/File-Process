@@ -6,17 +6,20 @@ defmodule ProgressTest do
   def test_progress_overhead(iterations) do
     # Simular Progress sin IO
     start = System.monotonic_time(:millisecond)
+
     Enum.each(1..iterations, fn i ->
       _percentage = i / iterations
       _filled = round(_percentage * 40)
       _empty = 40 - _filled
       # No hacer IO
     end)
+
     end_time = System.monotonic_time(:millisecond)
     without_io = end_time - start
 
     # Con IO real (como Progress.update)
     start = System.monotonic_time(:millisecond)
+
     Enum.each(1..iterations, fn i ->
       percentage = i / iterations
       filled = round(percentage * 40)
@@ -25,6 +28,7 @@ defmodule ProgressTest do
       empty_bar = String.duplicate("░", empty)
       IO.write("\r[#{filled_bar}#{empty_bar}] #{Float.round(percentage * 100, 1)}%")
     end)
+
     end_time = System.monotonic_time(:millisecond)
     with_io = end_time - start
 

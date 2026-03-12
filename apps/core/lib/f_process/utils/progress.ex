@@ -80,7 +80,9 @@ defmodule FProcess.Utils.Progress do
     grey = "\e[90m"
     reset = "\e[0m"
 
-    IO.write("\rProgress: [#{green}#{filled_bar}#{reset}#{grey}#{empty_bar}#{reset}] #{percent_text}% (#{current}/#{total})")
+    IO.write(
+      "\rProgress: [#{green}#{filled_bar}#{reset}#{grey}#{empty_bar}#{reset}] #{percent_text}% (#{current}/#{total})"
+    )
 
     :ok
   end

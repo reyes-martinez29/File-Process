@@ -163,7 +163,7 @@ defmodule FProcess.Metrics.XMLMetrics do
       %{
         category: category,
         product_count: length(category_products),
-        total_stock: Enum.sum(Enum.map(category_products, & &1.stock || 0)),
+        total_stock: Enum.sum(Enum.map(category_products, &(&1.stock || 0))),
         total_value: total_value
       }
     end)
@@ -181,7 +181,7 @@ defmodule FProcess.Metrics.XMLMetrics do
       %{
         supplier: supplier,
         product_count: length(supplier_products),
-        total_stock: Enum.sum(Enum.map(supplier_products, & &1.stock || 0))
+        total_stock: Enum.sum(Enum.map(supplier_products, &(&1.stock || 0)))
       }
     end)
     |> Enum.sort_by(& &1.product_count, :desc)

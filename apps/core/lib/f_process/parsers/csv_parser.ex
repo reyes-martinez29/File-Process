@@ -27,9 +27,9 @@ defmodule FProcess.Parsers.CSVParser do
   - `{:error, reason}` - File could not be read or has invalid structure
   """
   @spec parse(String.t()) ::
-    {:ok, list(Sale.t())} |
-    {:partial, list(Sale.t()), list({integer(), String.t()})} |
-    {:error, String.t()}
+          {:ok, list(Sale.t())}
+          | {:partial, list(Sale.t()), list({integer(), String.t()})}
+          | {:error, String.t()}
   def parse(file_path) do
     case File.read(file_path) do
       {:ok, content} ->
@@ -79,7 +79,8 @@ defmodule FProcess.Parsers.CSVParser do
   defp parse_data_lines(lines) do
     {sales, errors} =
       lines
-      |> Enum.with_index(2)  # Start at line 2 (after header)
+      # Start at line 2 (after header)
+      |> Enum.with_index(2)
       |> Enum.reduce({[], []}, fn {line, line_num}, {sales_acc, errors_acc} ->
         case parse_line(line, line_num) do
           {:ok, sale} ->
@@ -97,10 +98,12 @@ defmodule FProcess.Parsers.CSVParser do
     cond do
       length(errors) > 0 ->
         # ANY error means the entire file is corrupted
-        error_details = errors
+        error_details =
+          errors
           |> Enum.take(3)
           |> Enum.map(fn {line_num, reason} -> "Line #{line_num}: #{reason}" end)
           |> Enum.join("; ")
+
         {:error, "CSV validation failed: #{error_details}"}
 
       true ->
@@ -132,7 +135,6 @@ defmodule FProcess.Parsers.CSVParser do
          :ok <- validate_positive(precio, "precio_unitario"),
          :ok <- validate_positive(cantidad, "cantidad"),
          :ok <- validate_discount(descuento) do
-
       # Calculate total: apply discount percentage to line total
       # discount is provided as percentage (e.g., 5.0 for 5%)
       total = precio * cantidad * (1 - descuento / 100)
@@ -194,11 +196,13 @@ defmodule FProcess.Parsers.CSVParser do
   end
 
   defp validate_positive(value, _field_name) when value > 0, do: :ok
+
   defp validate_positive(value, field_name) do
     {:error, "#{field_name} must be positive, got: #{value}"}
   end
 
   defp validate_discount(discount) when discount >= 0 and discount <= 100, do: :ok
+
   defp validate_discount(discount) do
     {:error, "Discount must be between 0 and 100, got: #{discount}"}
   end

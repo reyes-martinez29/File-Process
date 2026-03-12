@@ -16,7 +16,7 @@ defmodule WebWeb.ResultsComponents do
   def empty_state(assigns) do
     ~H"""
     <div class="bg-slate-50 rounded-2xl p-8 text-center">
-      <p class="text-slate-400 text-sm"><%= @message %></p>
+      <p class="text-slate-400 text-sm">{@message}</p>
     </div>
     """
   end
@@ -31,7 +31,11 @@ defmodule WebWeb.ResultsComponents do
   """
   attr :label, :string, required: true
   attr :value, :any, required: true
-  attr :color, :string, required: true, values: ~w(indigo amber green purple rose slate emerald blue)
+
+  attr :color, :string,
+    required: true,
+    values: ~w(indigo amber green purple rose slate emerald blue)
+
   attr :class, :string, default: ""
 
   def metric_card(assigns) do
@@ -40,21 +44,29 @@ defmodule WebWeb.ResultsComponents do
 
     ~H"""
     <div class={["rounded-xl p-4", @bg_classes, @class]}>
-      <p class={["text-xs font-bold mb-1", @text_classes]}><%= @label %></p>
+      <p class={["text-xs font-bold mb-1", @text_classes]}>{@label}</p>
       <p class={["text-2xl font-black", @text_classes]}>
-        <%= @value %>
+        {@value}
       </p>
     </div>
     """
   end
 
-  defp metric_card_classes("indigo"), do: {"bg-indigo-50 border border-indigo-100", "text-indigo-600"}
+  defp metric_card_classes("indigo"),
+    do: {"bg-indigo-50 border border-indigo-100", "text-indigo-600"}
+
   defp metric_card_classes("amber"), do: {"bg-amber-50 border border-amber-100", "text-amber-600"}
   defp metric_card_classes("green"), do: {"bg-green-50 border border-green-100", "text-green-600"}
-  defp metric_card_classes("purple"), do: {"bg-purple-50 border border-purple-100", "text-purple-600"}
+
+  defp metric_card_classes("purple"),
+    do: {"bg-purple-50 border border-purple-100", "text-purple-600"}
+
   defp metric_card_classes("rose"), do: {"bg-rose-50 border border-rose-100", "text-rose-600"}
   defp metric_card_classes("slate"), do: {"bg-slate-50 border border-slate-100", "text-slate-600"}
-  defp metric_card_classes("emerald"), do: {"bg-emerald-50 border border-emerald-100", "text-emerald-600"}
+
+  defp metric_card_classes("emerald"),
+    do: {"bg-emerald-50 border border-emerald-100", "text-emerald-600"}
+
   defp metric_card_classes("blue"), do: {"bg-blue-50 border border-blue-100", "text-blue-600"}
 
   @doc """
@@ -83,21 +95,21 @@ defmodule WebWeb.ResultsComponents do
         @variant == "success" && "opacity-10",
         @variant == "default" && "opacity-5"
       ]}>
-        <%= @icon %>
+        {@icon}
       </div>
       <p class={[
         "text-3xl font-black",
         @variant == "success" && "text-emerald-600",
         @variant == "default" && "text-slate-800"
       ]}>
-        <%= @value %>
+        {@value}
       </p>
       <p class={[
         "text-xs font-bold uppercase tracking-tighter",
         @variant == "success" && "text-emerald-500",
         @variant == "default" && "text-slate-400"
       ]}>
-        <%= @label %>
+        {@label}
       </p>
     </div>
     """
@@ -154,9 +166,9 @@ defmodule WebWeb.ResultsComponents do
               </svg>
             </div>
             <div>
-              <h3 class="font-bold text-slate-800"><%= @result.filename %></h3>
+              <h3 class="font-bold text-slate-800">{@result.filename}</h3>
               <p class="text-xs text-slate-500">
-                <%= @result.lines_processed %> records • <%= @result.duration_ms %>ms
+                {@result.lines_processed} records • {@result.duration_ms}ms
               </p>
             </div>
           </div>
@@ -169,10 +181,10 @@ defmodule WebWeb.ResultsComponents do
         <div class="p-6">
           <%= if @grid_layout do %>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <%= render_slot(@inner_block, @result) %>
+              {render_slot(@inner_block, @result)}
             </div>
           <% else %>
-            <%= render_slot(@inner_block, @result) %>
+            {render_slot(@inner_block, @result)}
           <% end %>
         </div>
       <% end %>
@@ -180,10 +192,25 @@ defmodule WebWeb.ResultsComponents do
     """
   end
 
-  defp file_card_classes("indigo"), do: {"bg-gradient-to-r from-indigo-50 to-indigo-50 border-b border-indigo-100", "bg-indigo-100 text-indigo-600"}
-  defp file_card_classes("amber"), do: {"bg-gradient-to-r from-amber-50 to-amber-50 border-b border-amber-100", "bg-amber-100 text-amber-600"}
-  defp file_card_classes("green"), do: {"bg-gradient-to-r from-green-50 to-green-50 border-b border-green-100", "bg-green-100 text-green-600"}
-  defp file_card_classes("purple"), do: {"bg-gradient-to-r from-purple-50 to-purple-50 border-b border-purple-100", "bg-purple-100 text-purple-600"}
+  defp file_card_classes("indigo"),
+    do:
+      {"bg-gradient-to-r from-indigo-50 to-indigo-50 border-b border-indigo-100",
+       "bg-indigo-100 text-indigo-600"}
+
+  defp file_card_classes("amber"),
+    do:
+      {"bg-gradient-to-r from-amber-50 to-amber-50 border-b border-amber-100",
+       "bg-amber-100 text-amber-600"}
+
+  defp file_card_classes("green"),
+    do:
+      {"bg-gradient-to-r from-green-50 to-green-50 border-b border-green-100",
+       "bg-green-100 text-green-600"}
+
+  defp file_card_classes("purple"),
+    do:
+      {"bg-gradient-to-r from-purple-50 to-purple-50 border-b border-purple-100",
+       "bg-purple-100 text-purple-600"}
 
   @doc """
   Renders a status badge for file processing status.
@@ -197,11 +224,16 @@ defmodule WebWeb.ResultsComponents do
 
   def status_badge(assigns) do
     {badge_classes, icon, text} = status_badge_classes(assigns.status)
-    assigns = assigns |> assign(:badge_classes, badge_classes) |> assign(:icon, icon) |> assign(:text, text)
+
+    assigns =
+      assigns
+      |> assign(:badge_classes, badge_classes)
+      |> assign(:icon, icon)
+      |> assign(:text, text)
 
     ~H"""
     <span class={["px-3 py-1 rounded-full text-xs font-bold", @badge_classes]}>
-      <%= @icon %> <%= @text %>
+      {@icon} {@text}
     </span>
     """
   end

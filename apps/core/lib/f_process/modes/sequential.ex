@@ -69,12 +69,10 @@ defmodule FProcess.Modes.Sequential do
   # Private Functions
   # ============================================================================
 
-
   defp process_with_retry(file, config, attempt \\ 1) do
     max_retries = Map.get(config, :max_retries, 3)
 
     result = FileProcessor.process(file, config)
-
 
     # DEBUG: log whether error is considered retryable
     # optional debug: Logger.debug("Retryable check for #{inspect(file)}: #{inspect(retryable_error?(result))}")
@@ -91,14 +89,18 @@ defmodule FProcess.Modes.Sequential do
   end
 
   defp retryable_error?(%FileResult{errors: errors}) when is_list(errors) do
-    transient_re = ~r/failed to read|timeout|timed out|processing timeout|worker process crashed|killed|exit:/
+    transient_re =
+      ~r/failed to read|timeout|timed out|processing timeout|worker process crashed|killed|exit:/
+
     validation_re = ~r/validation|invalid|invalid json|csv validation/i
 
     Enum.any?(errors, fn
       msg when is_binary(msg) ->
         lowered = String.downcase(msg)
         String.match?(lowered, transient_re) and not String.match?(lowered, validation_re)
-      _ -> false
+
+      _ ->
+        false
     end)
   end
 
